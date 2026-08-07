@@ -97,10 +97,18 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate, onOpenRegister }) =>
             © 2026 Entrepreneurship Cell, IIT Bombay. All rights reserved.
           </div>
 
+          {/* Premium "Designed by AUTHENEX" Branding Badge */}
+          <div className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-slate-900/90 border border-slate-800/90 text-[11px] font-medium text-slate-400 shadow-sm hover:border-blue-500/40 transition-all duration-300 group cursor-default">
+            <span className="text-slate-400 group-hover:text-slate-300 transition-colors">Designed by</span>
+            <span className="font-black tracking-wider bg-gradient-to-r from-blue-400 via-indigo-300 to-emerald-400 bg-clip-text text-transparent uppercase text-[11px]">
+              AUTHENEX
+            </span>
+          </div>
+
           <div className="flex items-center gap-4">
             <button
               onClick={scrollToTop}
-              className="flex items-center gap-1 text-blue-400 hover:text-blue-300 font-bold cursor-pointer"
+              className="flex items-center gap-1 text-blue-400 hover:text-blue-300 font-bold cursor-pointer transition-colors"
             >
               <span>Back to Top</span>
               <ArrowUp className="w-4 h-4" />
