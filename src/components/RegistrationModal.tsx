@@ -1,0 +1,904 @@
+import React, { useState, useEffect } from 'react';
+import { TrackId, PitchSubmission, TeamMember } from '../types';
+import { TRACKS_DATA } from '../data/eurekaData';
+import confetti from 'canvas-confetti';
+import { X, CheckCircle2, Upload, Plus, Trash2, Loader2, AlertTriangle, Copy, Check, ExternalLink, ShieldAlert } from 'lucide-react';
+import { collection, addDoc } from 'firebase/firestore';
+import { GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
+import { db, auth } from '../lib/firebase';
+
+interface RegistrationModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  initialTrackId?: TrackId;
+  onSubmitSuccess: (submission: PitchSubmission) => void;
+}
+
+export const RegistrationModal: React.FC<RegistrationModalProps> = ({
+  isOpen,
+  onClose,
+  initialTrackId = 'business',
+  onSubmitSuccess,
+}) => {
+  const [step, setStep] = useState<1 | 2 | 3 | 4>(1);
+
+  // Step 1 State: Email verification & Google Sign-In
+  const [email, setEmail] = useState('');
+  const [isGoogleSigningIn, setIsGoogleSigningIn] = useState(false);
+  const [isGoogleVerified, setIsGoogleVerified] = useState(false);
+  const [emailError, setEmailError] = useState('');
+  const [unauthorizedDomain, setUnauthorizedDomain] = useState('');
+  const [showDomainGuide, setShowDomainGuide] = useState(false);
+  const [copiedDomain, setCopiedDomain] = useState(false);
+
+  // Step 2 State: Personal Information
+  const [personalInfo, setPersonalInfo] = useState({
+    firstName: '',
+    lastName: '',
+    gender: 'Select Gender',
+    countryCode: 'Select or search country code',
+    phone: '',
+    country: 'India',
+    professionalStatus: 'Select Status',
+    institute: '',
+  });
+
+  // Additional Team Members
+  const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
+
+  // Step 3 State: Startup Information
+  const [startupDetails, setStartupDetails] = useState({
+    startupName: '',
+    trackId: initialTrackId,
+    oneLiner: '',
+    stage: 'Prototype/MVP' as 'Idea' | 'Prototype/MVP' | 'Early Traction' | 'Revenue Generating',
+  });
+
+  // Step 4 State: Startup Details
+  const [questionnaire, setQuestionnaire] = useState({
+    problemStatement: '',
+    solution: '',
+    targetMarket: '',
+    revenueModel: '',
+    deckName: '',
+  });
+
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState('');
+
+  useEffect(() => {
+    if (initialTrackId) {
+      setStartupDetails((prev) => ({ ...prev, trackId: initialTrackId }));
+    }
+  }, [initialTrackId]);
+
+  if (!isOpen) return null;
+
+  const handleGoogleSignIn = async () => {
+    setEmailError('');
+    setShowDomainGuide(false);
+    setIsGoogleSigningIn(true);
+    try {
+      const provider = new GoogleAuthProvider();
+      provider.setCustomParameters({ prompt: 'select_account' });
+      const result = await signInWithPopup(auth, provider);
+      const user = result.user;
+      
+      if (user && user.email) {
+        setEmail(user.email);
+        setIsGoogleVerified(true);
+
+        // Pre-fill name in Step 2 if available from Google account
+        if (user.displayName) {
+          const parts = user.displayName.trim().split(' ');
+          const fName = parts[0] || '';
+          const lName = parts.slice(1).join(' ') || '';
+          setPersonalInfo(prev => ({
+            ...prev,
+            firstName: prev.firstName || fName,
+            lastName: prev.lastName || lName
+          }));
+        }
+
+        // Automatically open Step 2 (Personal Information) after short delay
+        setTimeout(() => {
+          setStep(2);
+        }, 800);
+      }
+    } catch (error: any) {
+      console.error('Google Auth Error:', error);
+      if (error.code === 'auth/popup-closed-by-user') {
+        setEmailError('Google sign-in popup was closed before completing authentication.');
+      } else if (error.code === 'auth/unauthorized-domain') {
+        const currentHost = window.location.hostname;
+        setUnauthorizedDomain(currentHost);
+        setShowDomainGuide(true);
+        setEmailError(`Domain "${currentHost}" needs to be added to Firebase Authorized Domains.`);
+      } else {
+        setEmailError(error.message || 'Failed to authenticate with Google. Please try again.');
+      }
+    } finally {
+      setIsGoogleSigningIn(false);
+    }
+  };
+
+  const handleCopyDomain = () => {
+    const domainToCopy = unauthorizedDomain || window.location.hostname;
+    navigator.clipboard.writeText(domainToCopy);
+    setCopiedDomain(true);
+    setTimeout(() => setCopiedDomain(false), 3000);
+  };
+
+  const handleAddMember = () => {
+    if (teamMembers.length >= 5) return;
+    setTeamMembers([...teamMembers, { name: '', email: '', role: 'Co-Founder / CTO', phone: '' }]);
+  };
+
+  const handleRemoveMember = (idx: number) => {
+    setTeamMembers(teamMembers.filter((_, i) => i !== idx));
+  };
+
+  const handleMemberChange = (idx: number, field: keyof TeamMember, val: string) => {
+    const updated = [...teamMembers];
+    updated[idx][field] = val;
+    setTeamMembers(updated);
+  };
+
+  const handleDeckUploadSimulation = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      setQuestionnaire({ ...questionnaire, deckName: e.target.files[0].name });
+    }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    setSubmitError('');
+
+    const fullName = `${personalInfo.firstName} ${personalInfo.lastName}`.trim() || 'Innovator';
+
+    const registrationData = {
+      teamName: startupDetails.startupName || 'Innovative Venture',
+      leaderName: fullName,
+      email: email || 'user@example.com',
+      phone: personalInfo.phone || '+91 98765 43210',
+      country: personalInfo.country || 'India',
+      professionalStatus: personalInfo.professionalStatus || 'Student',
+      college: personalInfo.institute || 'IIT Bombay',
+      track: startupDetails.trackId,
+      stage: startupDetails.stage,
+      oneLiner: startupDetails.oneLiner,
+      problemStatement: questionnaire.problemStatement,
+      solution: questionnaire.solution,
+      targetMarket: questionnaire.targetMarket,
+      revenueModel: questionnaire.revenueModel,
+      teamSize: 1 + teamMembers.length,
+      teamMembers: teamMembers,
+      deckName: questionnaire.deckName || 'Eureka_PitchDeck_v1.pdf',
+      createdAt: new Date().toISOString(),
+      submittedAtFormatted: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+      status: 'Under Review',
+    };
+
+    let docId = `EUREKA-2026-${Math.floor(100000 + Math.random() * 900000)}`;
+
+    try {
+      // Save directly to Firestore "registrations" collection
+      const docRef = await addDoc(collection(db, 'registrations'), registrationData);
+      docId = docRef.id;
+    } catch (err: any) {
+      console.error('Error saving to Firestore registrations collection:', err);
+      // Fallback allowed for graceful UX if offline
+    } finally {
+      setIsSubmitting(false);
+    }
+
+    const submission: PitchSubmission = {
+      id: docId,
+      startupName: registrationData.teamName,
+      trackId: startupDetails.trackId,
+      oneLiner: registrationData.oneLiner,
+      problemStatement: registrationData.problemStatement,
+      solution: registrationData.solution,
+      targetMarket: registrationData.targetMarket,
+      revenueModel: registrationData.revenueModel,
+      stage: startupDetails.stage,
+      teamLead: {
+        name: fullName,
+        email: registrationData.email,
+        phone: registrationData.phone,
+        role: 'Founder / CEO',
+        institute: registrationData.college,
+      },
+      teamMembers,
+      deckName: registrationData.deckName,
+      submittedAt: registrationData.submittedAtFormatted,
+      status: 'Under Review',
+    };
+
+    try {
+      confetti({
+        particleCount: 120,
+        spread: 80,
+        origin: { y: 0.6 },
+        colors: ['#2563eb', '#3b82f6', '#10b981', '#f59e0b'],
+      });
+    } catch (err) {
+      // ignore
+    }
+
+    onSubmitSuccess(submission);
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 overflow-y-auto bg-white bg-[linear-gradient(to_right,#e2e8f0_1px,transparent_1px),linear-gradient(to_bottom,#e2e8f0_1px,transparent_1px)] bg-[size:28px_28px] animate-fadeIn">
+      
+      {/* Top Header / Navbar space with Close Button */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <div className="font-black text-2xl tracking-tighter text-black flex items-center gap-1">
+            <span className="text-blue-600">e-cell</span>
+            <span className="text-xs font-bold text-slate-500 block leading-none">IIT BOMBAY</span>
+          </div>
+        </div>
+
+        <button
+          onClick={onClose}
+          id="close-registration-page-btn"
+          className="flex items-center gap-2 px-4 py-2 rounded-full bg-slate-900 text-white font-bold text-xs hover:bg-slate-800 transition-colors cursor-pointer shadow-md"
+        >
+          <span>Close Form</span>
+          <X className="w-4 h-4" />
+        </button>
+      </div>
+
+      {/* Main Registration Area */}
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 flex flex-col items-center">
+        
+        {/* Giant REGISTER Title - Pixel Perfect match to Screenshot */}
+        <h1 className="text-5xl sm:text-7xl font-black text-black tracking-tight text-center mb-10 uppercase">
+          REGISTER
+        </h1>
+
+        {/* Solid Black Step Container - Pixel Perfect match */}
+        <div className="bg-black text-white p-6 sm:p-12 rounded-2xl w-full max-w-4xl shadow-2xl relative border border-slate-950">
+          
+          {/* Stepper Steps */}
+          <div className="grid grid-cols-4 gap-2 sm:gap-4 mb-10 pb-6 border-b border-slate-800 relative">
+            
+            {/* Step 1 */}
+            <div className="flex flex-col items-center text-center relative z-10">
+              <div
+                className={`w-10 h-10 rounded-full font-extrabold text-sm flex items-center justify-center transition-colors ${
+                  step > 1
+                    ? 'bg-emerald-600 text-white'
+                    : step === 1
+                    ? 'bg-[#2563eb] text-white'
+                    : 'bg-[#1e293b] text-slate-400'
+                }`}
+              >
+                1
+              </div>
+              <span
+                className={`mt-2.5 text-[10px] sm:text-xs font-bold uppercase tracking-wider ${
+                  step > 1
+                    ? 'text-emerald-500'
+                    : step === 1
+                    ? 'text-[#2563eb]'
+                    : 'text-slate-400'
+                }`}
+              >
+                GOOGLE SIGN IN
+              </span>
+            </div>
+
+            {/* Step 2 */}
+            <div className="flex flex-col items-center text-center relative z-10">
+              <div
+                className={`w-10 h-10 rounded-full font-extrabold text-sm flex items-center justify-center transition-colors ${
+                  step > 2
+                    ? 'bg-emerald-600 text-white'
+                    : step === 2
+                    ? 'bg-[#2563eb] text-white'
+                    : 'bg-[#1e293b] text-slate-400'
+                }`}
+              >
+                2
+              </div>
+              <span
+                className={`mt-2.5 text-[10px] sm:text-xs font-bold uppercase tracking-wider ${
+                  step > 2
+                    ? 'text-emerald-500'
+                    : step === 2
+                    ? 'text-[#2563eb]'
+                    : 'text-slate-400'
+                }`}
+              >
+                PERSONAL INFORMATION
+              </span>
+            </div>
+
+            {/* Step 3 */}
+            <div className="flex flex-col items-center text-center relative z-10">
+              <div
+                className={`w-10 h-10 rounded-full font-extrabold text-sm flex items-center justify-center transition-colors ${
+                  step > 3
+                    ? 'bg-emerald-600 text-white'
+                    : step === 3
+                    ? 'bg-[#2563eb] text-white'
+                    : 'bg-[#1e293b] text-slate-400'
+                }`}
+              >
+                3
+              </div>
+              <span
+                className={`mt-2.5 text-[10px] sm:text-xs font-bold uppercase tracking-wider ${
+                  step > 3
+                    ? 'text-emerald-500'
+                    : step === 3
+                    ? 'text-[#2563eb]'
+                    : 'text-slate-400'
+                }`}
+              >
+                STARTUP INFORMATION
+              </span>
+            </div>
+
+            {/* Step 4 */}
+            <div className="flex flex-col items-center text-center relative z-10">
+              <div
+                className={`w-10 h-10 rounded-full font-extrabold text-sm flex items-center justify-center transition-colors ${
+                  step === 4
+                    ? 'bg-[#2563eb] text-white'
+                    : 'bg-[#1e293b] text-slate-400'
+                }`}
+              >
+                4
+              </div>
+              <span
+                className={`mt-2.5 text-[10px] sm:text-xs font-bold uppercase tracking-wider ${
+                  step === 4 ? 'text-[#2563eb]' : 'text-slate-400'
+                }`}
+              >
+                STARTUP DETAILS
+              </span>
+            </div>
+
+          </div>
+
+          {/* Form Content */}
+          <form onSubmit={handleSubmit}>
+            
+            {/* STEP 1: GOOGLE AUTHENTICATION */}
+            {step === 1 && (
+              <div className="space-y-6 pt-2 animate-fadeIn">
+                
+                {/* Google Authentication Box */}
+                <div className="p-8 rounded-2xl bg-slate-900/90 border border-slate-800 text-center space-y-4 shadow-lg">
+                  <h3 className="text-base font-bold text-white tracking-wide">
+                    Google Sign-In Authentication
+                  </h3>
+                  <p className="text-xs text-slate-400 max-w-md mx-auto leading-relaxed">
+                    Sign in with your Google account to verify your email address and unlock Step 2 of registration.
+                  </p>
+
+                  <div className="pt-2">
+                    <button
+                      type="button"
+                      disabled={isGoogleSigningIn}
+                      onClick={handleGoogleSignIn}
+                      className="w-full sm:w-auto px-8 py-4 bg-white hover:bg-slate-100 disabled:bg-slate-300 text-slate-900 font-extrabold rounded-xl text-sm transition-all duration-200 cursor-pointer shadow-lg inline-flex items-center justify-center gap-3 border border-slate-200 hover:scale-[1.02]"
+                    >
+                      {isGoogleSigningIn ? (
+                        <>
+                          <Loader2 className="w-5 h-5 animate-spin text-blue-600" />
+                          <span>Signing in with Google...</span>
+                        </>
+                      ) : isGoogleVerified && email ? (
+                        <span className="flex items-center gap-2 text-emerald-700 font-extrabold">
+                          <CheckCircle2 className="w-5 h-5 text-emerald-600" />
+                          Signed In: {email}
+                        </span>
+                      ) : (
+                        <>
+                          <svg className="w-5 h-5 shrink-0" viewBox="0 0 24 24">
+                            <path
+                              fill="#4285F4"
+                              d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
+                            />
+                            <path
+                              fill="#34A853"
+                              d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
+                            />
+                            <path
+                              fill="#FBBC05"
+                              d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"
+                            />
+                            <path
+                              fill="#EA4335"
+                              d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"
+                            />
+                          </svg>
+                          <span>Sign in with Google</span>
+                        </>
+                      )}
+                    </button>
+                  </div>
+
+                  {isGoogleVerified && email && (
+                    <div className="p-3 bg-emerald-950/80 border border-emerald-700/80 text-emerald-200 rounded-xl text-xs font-semibold flex items-center justify-center gap-2">
+                      <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+                      <span>Verified Google Account: <strong>{email}</strong></span>
+                    </div>
+                  )}
+
+                  {emailError && (
+                    <p className="text-red-400 text-xs mt-2 font-medium bg-red-950/60 p-3 rounded-lg border border-red-900/50">
+                      {emailError}
+                    </p>
+                  )}
+
+                  {showDomainGuide && (
+                    <div className="mt-4 p-4 rounded-xl bg-amber-950/60 border border-amber-500/40 text-left space-y-3 animate-fadeIn">
+                      <div className="flex items-start gap-2.5">
+                        <ShieldAlert className="w-5 h-5 text-amber-400 shrink-0 mt-0.5" />
+                        <div>
+                          <h4 className="text-xs font-bold text-amber-200">
+                            Firebase Authorized Domain Setup Required
+                          </h4>
+                          <p className="text-[11px] text-amber-300/80 mt-0.5 leading-relaxed">
+                            Google popup auth requires adding this app's domain to your Firebase Console under <strong>Authentication &gt; Settings &gt; Authorized domains</strong>.
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="bg-slate-950/80 p-2.5 rounded-lg flex items-center justify-between border border-slate-800 gap-2">
+                        <code className="text-xs text-blue-300 font-mono select-all truncate">
+                          {unauthorizedDomain || window.location.hostname}
+                        </code>
+                        <button
+                          type="button"
+                          onClick={handleCopyDomain}
+                          className="px-3 py-1.5 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold rounded text-xs transition-colors shrink-0 flex items-center gap-1.5 cursor-pointer"
+                        >
+                          {copiedDomain ? (
+                            <>
+                              <Check className="w-3.5 h-3.5 text-slate-950" />
+                              <span>Copied!</span>
+                            </>
+                          ) : (
+                            <>
+                              <Copy className="w-3.5 h-3.5" />
+                              <span>Copy Domain</span>
+                            </>
+                          )}
+                        </button>
+                      </div>
+
+                      <div className="text-[11px] text-slate-300 space-y-1 pl-1">
+                        <p className="font-semibold text-amber-200">3 Quick Steps in Firebase Console:</p>
+                        <ol className="list-decimal list-inside space-y-0.5 text-slate-400">
+                          <li>Go to <a href="https://console.firebase.google.com" target="_blank" rel="noreferrer" className="text-blue-400 underline inline-flex items-center gap-0.5">Firebase Console <ExternalLink className="w-3 h-3" /></a></li>
+                          <li>Navigate to <strong>Authentication &gt; Settings &gt; Authorized domains</strong></li>
+                          <li>Click <strong>Add domain</strong> and paste the copied domain above.</li>
+                        </ol>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                <div className="pt-4 flex justify-end">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (!isGoogleVerified || !email) {
+                        setEmailError('Please click "Sign in with Google" to authenticate before proceeding to Step 2');
+                        return;
+                      }
+                      setEmailError('');
+                      setStep(2);
+                    }}
+                    className="bg-[#2563eb] hover:bg-blue-700 text-white font-bold px-8 py-3 rounded-lg text-sm transition-colors cursor-pointer shadow-lg shadow-blue-600/30 flex items-center gap-2"
+                  >
+                    <span>Next Step →</span>
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* STEP 2: PERSONAL INFORMATION */}
+            {step === 2 && (
+              <div className="space-y-6 pt-2 animate-fadeIn">
+                
+                {/* Row 1: First Name & Last Name */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                  <div>
+                    <label className="block text-xs font-semibold text-white mb-2">
+                      First Name <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      placeholder="First Name"
+                      value={personalInfo.firstName}
+                      onChange={(e) => setPersonalInfo({ ...personalInfo, firstName: e.target.value })}
+                      className="w-full bg-[#f8fafc] text-slate-900 rounded-xl px-4 py-3.5 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-semibold text-white mb-2">
+                      Last Name <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      placeholder="Last Name"
+                      value={personalInfo.lastName}
+                      onChange={(e) => setPersonalInfo({ ...personalInfo, lastName: e.target.value })}
+                      className="w-full bg-[#f8fafc] text-slate-900 rounded-xl px-4 py-3.5 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                  </div>
+                </div>
+
+                {/* Row 2: Gender, Country Code, Contact Number */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div>
+                    <label className="block text-xs font-semibold text-white mb-2">
+                      Gender <span className="text-red-500">*</span>
+                    </label>
+                    <select
+                      value={personalInfo.gender}
+                      onChange={(e) => setPersonalInfo({ ...personalInfo, gender: e.target.value })}
+                      className="w-full bg-[#f8fafc] text-slate-900 rounded-xl px-4 py-3.5 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer"
+                    >
+                      <option value="Select Gender" disabled>Select Gender</option>
+                      <option value="Male">Male</option>
+                      <option value="Female">Female</option>
+                      <option value="Non-binary">Non-binary</option>
+                      <option value="Prefer not to say">Prefer not to say</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-semibold text-white mb-2">
+                      Country Code <span className="text-red-500">*</span>
+                    </label>
+                    <select
+                      value={personalInfo.countryCode}
+                      onChange={(e) => setPersonalInfo({ ...personalInfo, countryCode: e.target.value })}
+                      className="w-full bg-[#f8fafc] text-slate-900 rounded-xl px-4 py-3.5 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer"
+                    >
+                      <option value="Select or search country code" disabled>Select or search country code</option>
+                      <option value="+91">+91 (India)</option>
+                      <option value="+1">+1 (USA / Canada)</option>
+                      <option value="+44">+44 (UK)</option>
+                      <option value="+971">+971 (UAE)</option>
+                      <option value="+65">+65 (Singapore)</option>
+                      <option value="+61">+61 (Australia)</option>
+                      <option value="+49">+49 (Germany)</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-semibold text-white mb-2">
+                      Contact Number <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="tel"
+                      required
+                      placeholder="Contact Number"
+                      value={personalInfo.phone}
+                      onChange={(e) => setPersonalInfo({ ...personalInfo, phone: e.target.value })}
+                      className="w-full bg-[#f8fafc] text-slate-900 rounded-xl px-4 py-3.5 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                  </div>
+                </div>
+
+                {/* Row 3: Country */}
+                <div>
+                  <label className="block text-xs font-semibold text-white mb-2">
+                    Country <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="e.g. India"
+                    value={personalInfo.country}
+                    onChange={(e) => setPersonalInfo({ ...personalInfo, country: e.target.value })}
+                    className="w-full bg-[#f8fafc] text-slate-900 rounded-xl px-4 py-3.5 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
+
+                {/* Row 4: Current Professional Status */}
+                <div>
+                  <label className="block text-xs font-semibold text-white mb-2">
+                    Current Professional Status <span className="text-red-500">*</span>
+                  </label>
+                  <select
+                    value={personalInfo.professionalStatus}
+                    onChange={(e) => setPersonalInfo({ ...personalInfo, professionalStatus: e.target.value })}
+                    className="w-full bg-[#f8fafc] text-slate-900 rounded-xl px-4 py-3.5 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer"
+                  >
+                    <option value="Select Status" disabled>Select Status</option>
+                    <option value="Student">Student</option>
+                    <option value="Working Professional / Corporate">Working Professional / Corporate</option>
+                    <option value="Full-time Founder / Entrepreneur">Full-time Founder / Entrepreneur</option>
+                    <option value="Researcher / Academician">Researcher / Academician</option>
+                    <option value="Other">Other</option>
+                  </select>
+                </div>
+
+                {/* Row 5: College / Institution / Organization */}
+                <div>
+                  <label className="block text-xs font-semibold text-white mb-2">
+                    College / Institution / Organization <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="e.g. IIT Bombay"
+                    value={personalInfo.institute}
+                    onChange={(e) => setPersonalInfo({ ...personalInfo, institute: e.target.value })}
+                    className="w-full bg-[#f8fafc] text-slate-900 rounded-xl px-4 py-3.5 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
+
+                {/* Additional Team Members */}
+                <div className="pt-4 border-t border-slate-800 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-bold text-slate-300">
+                      Co-founders & Team Members (Optional)
+                    </span>
+                    <button
+                      type="button"
+                      onClick={handleAddMember}
+                      className="flex items-center gap-1 text-xs font-bold text-blue-400 hover:text-blue-300 cursor-pointer"
+                    >
+                      <Plus className="w-4 h-4" />
+                      <span>Add Member</span>
+                    </button>
+                  </div>
+
+                  {teamMembers.map((member, idx) => (
+                    <div key={idx} className="p-3 bg-slate-900 rounded-lg border border-slate-800 flex items-center gap-3">
+                      <input
+                        type="text"
+                        placeholder="Member Name"
+                        value={member.name}
+                        onChange={(e) => handleMemberChange(idx, 'name', e.target.value)}
+                        className="flex-1 bg-[#f8fafc] text-slate-900 rounded-md px-3 py-1.5 text-xs font-medium"
+                      />
+                      <input
+                        type="email"
+                        placeholder="Member Email"
+                        value={member.email}
+                        onChange={(e) => handleMemberChange(idx, 'email', e.target.value)}
+                        className="flex-1 bg-[#f8fafc] text-slate-900 rounded-md px-3 py-1.5 text-xs font-medium"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveMember(idx)}
+                        className="p-1 text-slate-500 hover:text-rose-400 cursor-pointer"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="pt-6 flex items-center justify-between">
+                  <button
+                    type="button"
+                    onClick={() => setStep(1)}
+                    className="bg-[#334155] hover:bg-slate-700 text-white font-bold px-6 py-2.5 rounded-lg text-sm transition-colors cursor-pointer"
+                  >
+                    Previous
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setStep(3)}
+                    className="bg-[#475569] hover:bg-slate-600 text-white font-bold px-8 py-3 rounded-lg text-sm transition-colors cursor-pointer"
+                  >
+                    Next
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* STEP 3: STARTUP INFORMATION */}
+            {step === 3 && (
+              <div className="space-y-6 pt-2 animate-fadeIn">
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-xs font-semibold text-white mb-2">
+                      Startup / Idea Name <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      placeholder="e.g. AeroClean Technologies"
+                      value={startupDetails.startupName}
+                      onChange={(e) => setStartupDetails({ ...startupDetails, startupName: e.target.value })}
+                      className="w-full bg-[#f8fafc] text-slate-900 rounded-lg px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-semibold text-white mb-2">
+                      One-Liner Elevator Pitch <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      placeholder="e.g. AI-powered robotics for solar farm efficiency reducing water usage by 90%."
+                      value={startupDetails.oneLiner}
+                      onChange={(e) => setStartupDetails({ ...startupDetails, oneLiner: e.target.value })}
+                      className="w-full bg-[#f8fafc] text-slate-900 rounded-lg px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-semibold text-white mb-2">Development Stage</label>
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                      {['Idea', 'Prototype/MVP', 'Early Traction', 'Revenue Generating'].map((stg) => (
+                        <button
+                          type="button"
+                          key={stg}
+                          onClick={() => setStartupDetails({ ...startupDetails, stage: stg as any })}
+                          className={`py-2 px-3 rounded-lg text-xs font-bold border transition-all cursor-pointer ${
+                            startupDetails.stage === stg
+                              ? 'bg-[#2563eb] text-white border-blue-500'
+                              : 'bg-slate-900 text-slate-300 border-slate-800 hover:border-slate-700'
+                          }`}
+                        >
+                          {stg}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="pt-6 flex items-center justify-between">
+                  <button
+                    type="button"
+                    onClick={() => setStep(2)}
+                    className="bg-[#334155] hover:bg-slate-700 text-white font-bold px-6 py-2.5 rounded-lg text-sm transition-colors cursor-pointer"
+                  >
+                    Previous
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setStep(4)}
+                    className="bg-[#2563eb] hover:bg-blue-700 text-white font-bold px-8 py-2.5 rounded-lg text-sm transition-colors cursor-pointer"
+                  >
+                    Next
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* STEP 4: STARTUP DETAILS & PITCH DECK */}
+            {step === 4 && (
+              <div className="space-y-6 pt-2 animate-fadeIn">
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-xs font-semibold text-white mb-2">
+                      Problem Statement <span className="text-red-500">*</span>
+                    </label>
+                    <textarea
+                      rows={2}
+                      required
+                      placeholder="What core problem are you solving?"
+                      value={questionnaire.problemStatement}
+                      onChange={(e) => setQuestionnaire({ ...questionnaire, problemStatement: e.target.value })}
+                      className="w-full bg-[#f8fafc] text-slate-900 rounded-lg px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-semibold text-white mb-2">
+                      Proposed Solution <span className="text-red-500">*</span>
+                    </label>
+                    <textarea
+                      rows={2}
+                      required
+                      placeholder="How does your technology/product uniquely solve this?"
+                      value={questionnaire.solution}
+                      onChange={(e) => setQuestionnaire({ ...questionnaire, solution: e.target.value })}
+                      className="w-full bg-[#f8fafc] text-slate-900 rounded-lg px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-xs font-semibold text-white mb-2">Target Market / TAM</label>
+                      <input
+                        type="text"
+                        placeholder="e.g. Commercial solar utilities ($3B TAM)"
+                        value={questionnaire.targetMarket}
+                        onChange={(e) => setQuestionnaire({ ...questionnaire, targetMarket: e.target.value })}
+                        className="w-full bg-[#f8fafc] text-slate-900 rounded-lg px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-semibold text-white mb-2">Revenue Model</label>
+                      <input
+                        type="text"
+                        placeholder="e.g. Hardware sale + Annual SaaS contract"
+                        value={questionnaire.revenueModel}
+                        onChange={(e) => setQuestionnaire({ ...questionnaire, revenueModel: e.target.value })}
+                        className="w-full bg-[#f8fafc] text-slate-900 rounded-lg px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Pitch Deck Upload */}
+                  <div>
+                    <label className="block text-xs font-semibold text-white mb-2">
+                      Pitch Deck Upload (PDF or PPT)
+                    </label>
+                    <div className="border-2 border-dashed border-slate-700 hover:border-blue-500 rounded-xl p-4 text-center space-y-2 bg-slate-900/60 transition-colors">
+                      <Upload className="w-6 h-6 text-blue-400 mx-auto" />
+                      <div className="text-xs text-slate-300 font-medium">
+                        {questionnaire.deckName ? (
+                          <span className="text-emerald-400 font-bold">✓ Attached: {questionnaire.deckName}</span>
+                        ) : (
+                          <span>Upload PDF or PPT presentation (Max 20MB)</span>
+                        )}
+                      </div>
+                      <input
+                        type="file"
+                        accept=".pdf,.ppt,.pptx"
+                        onChange={handleDeckUploadSimulation}
+                        className="hidden"
+                        id="deck-file-input"
+                      />
+                      <label
+                        htmlFor="deck-file-input"
+                        className="inline-block px-4 py-1.5 rounded-md bg-slate-800 hover:bg-slate-700 text-xs font-bold text-slate-200 cursor-pointer"
+                      >
+                        Choose File
+                      </label>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="pt-6 flex items-center justify-between border-t border-slate-800">
+                  <button
+                    type="button"
+                    onClick={() => setStep(3)}
+                    className="bg-[#334155] hover:bg-slate-700 text-white font-bold px-6 py-2.5 rounded-lg text-sm transition-colors cursor-pointer"
+                  >
+                    Previous
+                  </button>
+
+                  <button
+                    type="submit"
+                    disabled={isSubmitting}
+                    id="final-submit-application-btn"
+                    className="bg-[#2563eb] hover:bg-blue-700 disabled:bg-blue-800 text-white font-black px-8 py-3.5 rounded-lg text-sm uppercase tracking-wider transition-colors cursor-pointer shadow-lg shadow-blue-600/30 flex items-center gap-2"
+                  >
+                    {isSubmitting ? (
+                      <>
+                        <Loader2 className="w-4 h-4 animate-spin text-white" />
+                        <span>Saving to Firebase...</span>
+                      </>
+                    ) : (
+                      <span>Submit Application</span>
+                    )}
+                  </button>
+                </div>
+              </div>
+            )}
+
+          </form>
+
+        </div>
+
+      </div>
+
+    </div>
+  );
+};

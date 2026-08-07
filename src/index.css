@@ -1,0 +1,53 @@
+@import "tailwindcss";
+
+@keyframes marqueeLeft {
+  0% {
+    transform: translate3d(0, 0, 0);
+  }
+  100% {
+    transform: translate3d(-50%, 0, 0);
+  }
+}
+
+@keyframes marqueeRight {
+  0% {
+    transform: translate3d(-50%, 0, 0);
+  }
+  100% {
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+.animate-marquee-left {
+  display: flex;
+  width: max-content;
+  animation: marqueeLeft 35s linear infinite;
+  will-change: transform;
+}
+
+.animate-marquee-right {
+  display: flex;
+  width: max-content;
+  animation: marqueeRight 35s linear infinite;
+  will-change: transform;
+}
+
+.animate-marquee-left:hover,
+.animate-marquee-left:active,
+.animate-[#row1]:hover,
+.animate-marquee-right:hover,
+.animate-marquee-right:active {
+  animation-play-state: paused;
+}
+
+.timeline-stroke-text {
+  font-family: 'League Spartan', sans-serif;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 6px;
+  line-height: 1;
+  color: transparent;
+  -webkit-text-stroke: 2px #4a4a4a;
+  text-stroke: 2px #4a4a4a;
+}
+

@@ -1,0 +1,22 @@
+{
+  "entities": {
+    "registrations": {
+      "title": "Registrations",
+      "description": "Hackathon and startup competition team registrations",
+      "type": "object",
+      "properties": {
+        "teamName": { "type": "string" },
+        "leaderName": { "type": "string" },
+        "email": { "type": "string" },
+        "phone": { "type": "string" },
+        "college": { "type": "string" },
+        "track": { "type": "string" },
+        "stage": { "type": "string" },
+        "teamSize": { "type": "number" },
+        "pitchSummary": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["teamName", "leaderName", "email", "phone", "track"]
+    }
+  }
+}

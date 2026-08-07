@@ -1,0 +1,6 @@
+{
+  "name": "Eureka! - E-Cell IIT Bombay",
+  "description": "Asia's Largest Business Model Competition website by E-Cell IIT Bombay featuring tracks, incentives, roadmap, mentorship network, past winners, FAQs, and registration portal.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
