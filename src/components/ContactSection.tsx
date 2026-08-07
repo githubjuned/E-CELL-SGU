@@ -122,7 +122,7 @@ const COMPETITION_CONTACTS: ContactPerson[] = [
   },
 ];
 
-const SPONSORSHIP_CONTACTS: ContactPerson[] = [
+[
   {
     name: 'Tanishka Zagade',
     role: 'MARKETING & BRANDING HEAD',
@@ -166,7 +166,7 @@ const SPONSORSHIP_CONTACTS: ContactPerson[] = [
     phone: '+91 8237427271',
     linkedIn: 'https://www.linkedin.com/in/pritam-patil-238940375?utm_source=share_via&utm_content=profile&utm_medium=member_android',
     whatsapp: 'https://wa.me/918237427271',
-    image: 'https://res.cloudinary.com/xabhk9g8/image/upload/v1786129931/WhatsApp_Image_2026-08-07_at_23.05.50_g1ompk.jpg',
+    image: 'https://res.cloudinary.com/xabhk9g8/image/upload/v1786132536/WhatsApp_Image_2026-08-08_at_01.24.32_nzteo7.jpg',
   },
   {
     name: 'Nirbhay Gawad',
@@ -247,9 +247,9 @@ export const ContactSection: React.FC = () => {
 
   return (
     <section id="contact" className="py-16 sm:py-24 bg-[#a4c5e4] text-slate-900 relative overflow-hidden">
-      
+
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-        
+
         {/* Main Title matching image */}
         <div className="text-center mb-10 sm:mb-14">
           <h1 className="text-5xl sm:text-7xl md:text-8xl font-black text-[#0c2340] tracking-tight uppercase">
