@@ -1,5 +1,5 @@
 import React from 'react';
-import { Mail, Linkedin, MessageCircle, Instagram } from 'lucide-react';
+import { Mail, Linkedin, MessageCircle } from 'lucide-react';
 
 interface ContactPerson {
   name: string;
@@ -11,7 +11,7 @@ interface ContactPerson {
   image: string;
 }
 
-const COMPETITION_CONTACTS: ContactPerson[] = [
+const TEAM_CONTACTS: ContactPerson[] = [
   {
     name: 'Guruprasad Godamgave',
     role: 'President',
@@ -96,16 +96,16 @@ const COMPETITION_CONTACTS: ContactPerson[] = [
   {
     name: 'Vaishnav Musmade',
     role: 'EVENT LEAD',
-    email: 'musmadevaishnav123@gmail.com ',
+    email: 'musmadevaishnav123@gmail.com',
     phone: '+91 8421678465',
-    linkedIn: ' https://www.linkedin.com/in/vaishnav-musmade-1745aa373?utm_source=share_via&utm_content=profile&utm_medium=member_android',
+    linkedIn: 'https://www.linkedin.com/in/vaishnav-musmade-1745aa373?utm_source=share_via&utm_content=profile&utm_medium=member_android',
     whatsapp: 'https://wa.me/918421678465',
     image: 'https://res.cloudinary.com/xabhk9g8/image/upload/v1786128450/WhatsApp_Image_2026-08-07_at_23.17.39_cmj6pb.jpg',
   },
   {
     name: 'Mahesh Yadav',
     role: 'WORKSHOP LEAD',
-    email: 'mmahesh.yadav2030@gmail.com ',
+    email: 'mmahesh.yadav2030@gmail.com',
     phone: '+91 7208585519',
     linkedIn: 'https://www.linkedin.com/in/mahesh-yadav-36270233a?utm_source=share_via&utm_content=profile&utm_medium=member_android',
     whatsapp: 'https://wa.me/917208585519',
@@ -114,19 +114,16 @@ const COMPETITION_CONTACTS: ContactPerson[] = [
   {
     name: 'Tejas Patel',
     role: 'WORKSHOP LEAD',
-    email: 'tejasp5052@gmail.com ',
+    email: 'tejasp5052@gmail.com',
     phone: '+91 8050523134',
     linkedIn: 'https://www.linkedin.com/in/tejasp5052',
     whatsapp: 'https://wa.me/918050523134',
     image: 'https://res.cloudinary.com/xabhk9g8/image/upload/v1786128722/WhatsApp_Image_2026-08-07_at_23.06.27_bvifu8.jpg',
   },
-];
-
-const SPONSORSHIP_CONTACTS: ContactPerson[] = [
   {
     name: 'Tanishka Zagade',
     role: 'MARKETING & BRANDING HEAD',
-    email: 'tanishkazagade7686@gmail.com ',
+    email: 'tanishkazagade7686@gmail.com',
     phone: '+91 7620187587',
     linkedIn: 'https://www.linkedin.com/in/tanishka-zagade-703388370?utm_source=share_via&utm_content=profile&utm_medium=member_android',
     whatsapp: 'https://wa.me/917620187587',
@@ -247,25 +244,18 @@ export const ContactSection: React.FC = () => {
 
   return (
     <section id="contact" className="py-16 sm:py-24 bg-[#a4c5e4] text-slate-900 relative overflow-hidden">
-
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-
-        {/* Main Title matching image */}
+        
+        {/* Main Title */}
         <div className="text-center mb-10 sm:mb-14">
           <h1 className="text-5xl sm:text-7xl md:text-8xl font-black text-[#0c2340] tracking-tight uppercase">
             CONTACT US
           </h1>
         </div>
 
-        {/* Section 1: ALL TEAM CONTACTS */}
-        <div>
-          <h2 className="text-xl sm:text-3xl md:text-4xl font-black uppercase text-[#0c2340] tracking-wider text-center mb-8 sm:mb-10">
-            FOR COMPETITION AND MENTORING RELATED QUERIES
-          </h2>
-
-          <div className="flex flex-wrap justify-center gap-4 sm:gap-6 max-w-7xl mx-auto">
-            {[...COMPETITION_CONTACTS, ...SPONSORSHIP_CONTACTS].map((person, idx) => renderContactCard(person, idx))}
-          </div>
+        {/* Unified Team Contacts Grid */}
+        <div className="flex flex-wrap justify-center gap-4 sm:gap-6 max-w-7xl mx-auto">
+          {TEAM_CONTACTS.map((person, idx) => renderContactCard(person, idx))}
         </div>
 
       </div>
