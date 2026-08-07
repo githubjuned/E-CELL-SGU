@@ -52,10 +52,14 @@ export const DashboardModal: React.FC<DashboardModalProps> = ({
       {/* Top Header / Navbar space with Close Button */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <div className="font-black text-2xl tracking-tighter text-black flex items-center gap-1">
-            <span className="text-blue-600">e-cell</span>
-            <span className="text-xs font-bold text-slate-500 block leading-none">IIT BOMBAY</span>
-          </div>
+          <img
+            src="https://res.cloudinary.com/xabhk9g8/image/upload/v1786130806/E-Cell_Logo-Black_qdscmy.png"
+            alt="E-CELL SGU Logo"
+            className="h-9 sm:h-11 w-auto object-contain"
+          />
+          <span className="font-black text-xl sm:text-2xl text-slate-900 tracking-tight">
+            E-CELL SGU
+          </span>
         </div>
 
         <button

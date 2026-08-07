@@ -57,16 +57,19 @@ export const Navbar: React.FC<NavbarProps> = ({
     <header className="fixed top-0 left-0 right-0 z-50 bg-white border-b border-gray-200/80 shadow-sm py-3 px-4 sm:px-8">
       <div className="max-w-7xl mx-auto flex items-center justify-between">
         
-        {/* Left: E-Cell Logo */}
+        {/* Left: E-Cell Logo & Brand Name */}
         <button
           onClick={() => handleNavClick('home')}
-          className="flex items-center text-left focus:outline-none group cursor-pointer"
+          className="flex items-center gap-3 text-left focus:outline-none group cursor-pointer"
         >
           <img
-            src="https://res.cloudinary.com/xabhk9g8/image/upload/v1786124867/logo_dvwylt.webp"
-            alt="Logo"
+            src="https://res.cloudinary.com/xabhk9g8/image/upload/v1786130806/E-Cell_Logo-Black_qdscmy.png"
+            alt="E-CELL SGU Logo"
             className="h-10 sm:h-12 w-auto object-contain"
           />
+          <span className="font-black text-xl sm:text-2xl text-slate-900 tracking-tight">
+            E-CELL SGU
+          </span>
         </button>
 
         {/* Center Nav Links */}
