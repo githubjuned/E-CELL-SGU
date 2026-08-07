@@ -29,6 +29,7 @@ export const RegistrationModal: React.FC<RegistrationModalProps> = ({
   const [emailError, setEmailError] = useState('');
   const [unauthorizedDomain, setUnauthorizedDomain] = useState('');
   const [showDomainGuide, setShowDomainGuide] = useState(false);
+  const [showProviderGuide, setShowProviderGuide] = useState(false);
   const [copiedDomain, setCopiedDomain] = useState(false);
 
   // Step 2 State: Personal Information
@@ -92,6 +93,7 @@ export const RegistrationModal: React.FC<RegistrationModalProps> = ({
   const handleGoogleSignIn = async () => {
     setEmailError('');
     setShowDomainGuide(false);
+    setShowProviderGuide(false);
     setIsGoogleSigningIn(true);
     try {
       const provider = new GoogleAuthProvider();
@@ -129,6 +131,9 @@ export const RegistrationModal: React.FC<RegistrationModalProps> = ({
         setUnauthorizedDomain(currentHost);
         setShowDomainGuide(true);
         setEmailError(`Domain "${currentHost}" needs to be added to Firebase Authorized Domains.`);
+      } else if (error.code === 'auth/operation-not-allowed') {
+        setShowProviderGuide(true);
+        setEmailError('Google Sign-In is disabled in Firebase. Please enable the Google Provider in Firebase Console.');
       } else {
         setEmailError(error.message || 'Failed to authenticate with Google. Please try again.');
       }
@@ -496,6 +501,32 @@ export const RegistrationModal: React.FC<RegistrationModalProps> = ({
                           <li>Go to <a href="https://console.firebase.google.com" target="_blank" rel="noreferrer" className="text-blue-400 underline inline-flex items-center gap-0.5">Firebase Console <ExternalLink className="w-3 h-3" /></a></li>
                           <li>Navigate to <strong>Authentication &gt; Settings &gt; Authorized domains</strong></li>
                           <li>Click <strong>Add domain</strong> and paste the copied domain above.</li>
+                        </ol>
+                      </div>
+                    </div>
+                  )}
+
+                  {showProviderGuide && (
+                    <div className="mt-4 p-4 rounded-xl bg-red-950/60 border border-red-500/40 text-left space-y-3 animate-fadeIn">
+                      <div className="flex items-start gap-2.5">
+                        <ShieldAlert className="w-5 h-5 text-red-400 shrink-0 mt-0.5" />
+                        <div>
+                          <h4 className="text-xs font-bold text-red-200">
+                            Google Sign-In Provider Needs to be Enabled
+                          </h4>
+                          <p className="text-[11px] text-red-300/80 mt-0.5 leading-relaxed">
+                            Firebase returned <code className="text-amber-300 font-mono">auth/operation-not-allowed</code> because Google is not enabled as a Sign-in Provider in your project console.
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="text-[11px] text-slate-300 space-y-1 pl-1 bg-slate-950/80 p-3 rounded-lg border border-slate-800">
+                        <p className="font-semibold text-red-200">How to fix in 3 clicks (10 seconds):</p>
+                        <ol className="list-decimal list-inside space-y-1 text-slate-300">
+                          <li>Go to <a href="https://console.firebase.google.com" target="_blank" rel="noreferrer" className="text-blue-400 underline inline-flex items-center gap-0.5">Firebase Console <ExternalLink className="w-3 h-3" /></a></li>
+                          <li>Click <strong>Authentication</strong> ➔ <strong>Sign-in method</strong> tab.</li>
+                          <li>Click <strong>Google</strong> (under Additional providers or Sign-in providers).</li>
+                          <li>Toggle <strong>Enable</strong>, select your Support email, and click <strong>Save</strong>!</li>
                         </ol>
                       </div>
                     </div>
