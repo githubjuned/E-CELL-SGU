@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Navbar } from './components/Navbar';
 import { Hero } from './components/Hero';
 import { WhyEurekaSection } from './components/WhyEurekaSection';
@@ -19,6 +19,8 @@ import { RegistrationModal } from './components/RegistrationModal';
 import { DashboardModal } from './components/DashboardModal';
 import { TeaserModal } from './components/TeaserModal';
 import { TrackId, PitchSubmission } from './types';
+import { onAuthStateChanged, User as FirebaseUser, signOut } from 'firebase/auth';
+import { auth } from './lib/firebase';
 
 export default function App() {
   const [activeSection, setActiveSection] = useState<string>('home');
@@ -26,6 +28,23 @@ export default function App() {
   const [selectedTrackId, setSelectedTrackId] = useState<TrackId>('business');
   const [isDashboardOpen, setIsDashboardOpen] = useState<boolean>(false);
   const [isTeaserOpen, setIsTeaserOpen] = useState<boolean>(false);
+  const [authUser, setAuthUser] = useState<FirebaseUser | null>(null);
+
+  // Real-time Firebase Auth Listener
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      setAuthUser(user);
+    });
+    return () => unsubscribe();
+  }, []);
+
+  const handleSignOut = async () => {
+    try {
+      await signOut(auth);
+    } catch (err) {
+      console.error('Sign out error:', err);
+    }
+  };
 
   // Persistence for user registration submission
   const [mySubmission, setMySubmission] = useState<PitchSubmission | null>(() => {
@@ -118,6 +137,8 @@ export default function App() {
         onOpenDashboard={() => setIsDashboardOpen(true)}
         hasSubmission={!!mySubmission}
         registeredName={mySubmission?.startupName}
+        authUser={authUser}
+        onSignOut={handleSignOut}
       />
 
       {/* Main Content Area based on active navigation tab */}

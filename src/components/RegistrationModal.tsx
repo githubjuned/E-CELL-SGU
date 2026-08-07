@@ -70,7 +70,22 @@ export const RegistrationModal: React.FC<RegistrationModalProps> = ({
     if (initialTrackId) {
       setStartupDetails((prev) => ({ ...prev, trackId: initialTrackId }));
     }
-  }, [initialTrackId]);
+    if (auth.currentUser && auth.currentUser.email) {
+      const u = auth.currentUser;
+      setEmail(u.email);
+      setIsGoogleVerified(true);
+      if (u.displayName) {
+        const parts = u.displayName.trim().split(' ');
+        const fName = parts[0] || '';
+        const lName = parts.slice(1).join(' ') || '';
+        setPersonalInfo((prev) => ({
+          ...prev,
+          firstName: prev.firstName || fName,
+          lastName: prev.lastName || lName,
+        }));
+      }
+    }
+  }, [initialTrackId, isOpen]);
 
   if (!isOpen) return null;
 
