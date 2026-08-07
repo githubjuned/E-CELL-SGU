@@ -122,7 +122,7 @@ const COMPETITION_CONTACTS: ContactPerson[] = [
   },
 ];
 
-[
+const SPONSORSHIP_CONTACTS: ContactPerson[] = [
   {
     name: 'Tanishka Zagade',
     role: 'MARKETING & BRANDING HEAD',
