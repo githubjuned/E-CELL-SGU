@@ -114,7 +114,7 @@ const TEAM_CONTACTS: ContactPerson[] = [
   {
     name: 'Mahesh Yadav',
     role: 'WORKSHOP LEAD',
-    email: 'mmahesh.yadav2030@gmail.com ',
+    email: 'mmahesh.yadav2030@gmail.com',
     phone: '+91 7208585519',
     linkedIn: 'https://www.linkedin.com/in/mahesh-yadav-36270233a?utm_source=share_via&utm_content=profile&utm_medium=member_android',
     whatsapp: 'https://wa.me/917208585519',
@@ -123,32 +123,20 @@ const TEAM_CONTACTS: ContactPerson[] = [
   {
     name: 'Tejas Patel',
     role: 'WORKSHOP LEAD',
-    email: 'tejasp5052@gmail.com ',
+    email: 'tejasp5052@gmail.com',
     phone: '+91 8050523134',
     linkedIn: 'https://www.linkedin.com/in/tejasp5052',
     whatsapp: 'https://wa.me/918050523134',
     image: 'https://res.cloudinary.com/xabhk9g8/image/upload/v1786128722/WhatsApp_Image_2026-08-07_at_23.06.27_bvifu8.jpg',
   },
-];
-
-const SPONSORSHIP_CONTACTS: ContactPerson[] = [
   {
     name: 'Tanishka Zagade',
     role: 'MARKETING & BRANDING HEAD',
-    email: 'tanishkazagade7686@gmail.com ',
+    email: 'tanishkazagade7686@gmail.com',
     phone: '+91 7620187587',
     linkedIn: 'https://www.linkedin.com/in/tanishka-zagade-703388370?utm_source=share_via&utm_content=profile&utm_medium=member_android',
     whatsapp: 'https://wa.me/917620187587',
     image: 'https://res.cloudinary.com/xabhk9g8/image/upload/v1786128896/WhatsApp_Image_2026-08-07_at_23.12.12_uedgce.jpg',
-  },
-  {
-    name: 'Vaishnav Musmade',
-    role: 'EVENT LEAD',
-    email: 'musmadevaishnav123@gmail.com ',
-    phone: '+91 8421678465',
-    linkedIn: ' https://www.linkedin.com/in/vaishnav-musmade-1745aa373?utm_source=share_via&utm_content=profile&utm_medium=member_android',
-    whatsapp: 'https://wa.me/918421678465',
-    image: 'https://res.cloudinary.com/xabhk9g8/image/upload/v1786128450/WhatsApp_Image_2026-08-07_at_23.17.39_cmj6pb.jpg',
   },
   {
     name: 'Yuvraj Deshmukh',
@@ -176,15 +164,6 @@ const SPONSORSHIP_CONTACTS: ContactPerson[] = [
     linkedIn: 'https://www.linkedin.com/in/sri-manogna-9454b8384/',
     whatsapp: 'https://wa.me/916301666123',
     image: 'https://res.cloudinary.com/xabhk9g8/image/upload/v1786129480/WhatsApp_Image_2026-08-07_at_23.12.12_ujcjtt.jpg',
-  },
-  {
-    name: 'Yuvraj Deshmukh',
-    role: 'COORDINATOR',
-    email: 'yuvrajdeshmukh237@gmail.com',
-    phone: '+91 9075548751',
-    linkedIn: 'https://www.linkedin.com/in/yuvraj-deshmukh-612b10380?utm_source=share_via&utm_content=profile&utm_medium=member_android',
-    whatsapp: 'https://wa.me/919075548751',
-    image: 'https://res.cloudinary.com/xabhk9g8/image/upload/v1786129150/WhatsApp_Image_2026-08-07_at_23.17.39_d2gtca.jpg',
   },
   {
     name: 'Nirbhay Gawad',
@@ -265,36 +244,18 @@ export const ContactSection: React.FC = () => {
 
   return (
     <section id="contact" className="py-16 sm:py-24 bg-[#a4c5e4] text-slate-900 relative overflow-hidden">
-
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-
-        {/* Main Title matching image */}
+        
+        {/* Main Title */}
         <div className="text-center mb-10 sm:mb-14">
           <h1 className="text-5xl sm:text-7xl md:text-8xl font-black text-[#0c2340] tracking-tight uppercase">
             CONTACT US
           </h1>
         </div>
 
-        {/* Section 1: COMPETITION AND MENTORING QUERIES */}
-        <div className="mb-16">
-          <h2 className="text-xl sm:text-3xl md:text-4xl font-black uppercase text-[#0c2340] tracking-wider text-center mb-8 sm:mb-10">
-            FOR COMPETITION AND MENTORING RELATED QUERIES
-          </h2>
-
-          <div className="flex flex-wrap justify-center gap-4 sm:gap-6 max-w-7xl mx-auto">
-            {COMPETITION_CONTACTS.map((person, idx) => renderContactCard(person, idx))}
-          </div>
-        </div>
-
-        {/* Section 2: SPONSORSHIP QUERIES */}
-        <div>
-          <h2 className="text-xl sm:text-3xl md:text-4xl font-black uppercase text-[#0c2340] tracking-wider text-center mb-8 sm:mb-10">
-            FOR SPONSORSHIP QUERIES
-          </h2>
-
-          <div className="flex flex-wrap justify-center gap-4 sm:gap-6 max-w-7xl mx-auto">
-            {SPONSORSHIP_CONTACTS.map((person, idx) => renderContactCard(person, idx))}
-          </div>
+        {/* Unified Team Contacts Grid */}
+        <div className="flex flex-wrap justify-center gap-4 sm:gap-6 max-w-7xl mx-auto">
+          {TEAM_CONTACTS.map((person, idx) => renderContactCard(person, idx))}
         </div>
 
       </div>
