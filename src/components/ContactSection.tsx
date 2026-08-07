@@ -257,25 +257,14 @@ export const ContactSection: React.FC = () => {
           </h1>
         </div>
 
-        {/* Section 1: COMPETITION AND MENTORING QUERIES */}
-        <div className="mb-16">
+        {/* Section 1: ALL TEAM CONTACTS */}
+        <div>
           <h2 className="text-xl sm:text-3xl md:text-4xl font-black uppercase text-[#0c2340] tracking-wider text-center mb-8 sm:mb-10">
             FOR COMPETITION AND MENTORING RELATED QUERIES
           </h2>
 
           <div className="flex flex-wrap justify-center gap-4 sm:gap-6 max-w-7xl mx-auto">
-            {COMPETITION_CONTACTS.map((person, idx) => renderContactCard(person, idx))}
-          </div>
-        </div>
-
-        {/* Section 2: SPONSORSHIP QUERIES */}
-        <div>
-          <h2 className="text-xl sm:text-3xl md:text-4xl font-black uppercase text-[#0c2340] tracking-wider text-center mb-8 sm:mb-10">
-            FOR SPONSORSHIP QUERIES
-          </h2>
-
-          <div className="flex flex-wrap justify-center gap-4 sm:gap-6 max-w-7xl mx-auto">
-            {SPONSORSHIP_CONTACTS.map((person, idx) => renderContactCard(person, idx))}
+            {[...COMPETITION_CONTACTS, ...SPONSORSHIP_CONTACTS].map((person, idx) => renderContactCard(person, idx))}
           </div>
         </div>
 
