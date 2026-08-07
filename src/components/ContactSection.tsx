@@ -192,7 +192,7 @@ export const ContactSection: React.FC = () => {
   const renderContactCard = (person: ContactPerson, idx: number) => (
     <div
       key={idx}
-      className="bg-black rounded-2xl p-3 sm:p-4 relative flex flex-col justify-between shadow-xl border border-slate-900 group hover:scale-[1.03] transition-all duration-300"
+      className="bg-black rounded-2xl p-3 sm:p-4 relative flex flex-col justify-between shadow-xl border border-slate-900 group hover:scale-[1.03] transition-all duration-300 w-full sm:w-[calc(50%-16px)] lg:w-[calc(25%-18px)] max-w-[320px]"
     >
       {/* Compact Photo Container */}
       <div className="relative aspect-4/5 rounded-xl overflow-hidden bg-slate-900 mb-3 flex items-center justify-center">
@@ -257,24 +257,24 @@ export const ContactSection: React.FC = () => {
           </h1>
         </div>
 
-        {/* Section 1: COMPETITION AND MENTORING QUERIES (12 Members) */}
+        {/* Section 1: COMPETITION AND MENTORING QUERIES */}
         <div className="mb-16">
           <h2 className="text-xl sm:text-3xl md:text-4xl font-black uppercase text-[#0c2340] tracking-wider text-center mb-8 sm:mb-10">
             FOR COMPETITION AND MENTORING RELATED QUERIES
           </h2>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 max-w-7xl mx-auto">
+          <div className="flex flex-wrap justify-center gap-4 sm:gap-6 max-w-7xl mx-auto">
             {COMPETITION_CONTACTS.map((person, idx) => renderContactCard(person, idx))}
           </div>
         </div>
 
-        {/* Section 2: SPONSORSHIP QUERIES (8 Members) */}
+        {/* Section 2: SPONSORSHIP QUERIES */}
         <div>
           <h2 className="text-xl sm:text-3xl md:text-4xl font-black uppercase text-[#0c2340] tracking-wider text-center mb-8 sm:mb-10">
             FOR SPONSORSHIP QUERIES
           </h2>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 max-w-7xl mx-auto">
+          <div className="flex flex-wrap justify-center gap-4 sm:gap-6 max-w-7xl mx-auto">
             {SPONSORSHIP_CONTACTS.map((person, idx) => renderContactCard(person, idx))}
           </div>
         </div>
