@@ -12,6 +12,7 @@ interface RegistrationModalProps {
   onClose: () => void;
   initialTrackId?: TrackId;
   onSubmitSuccess: (submission: PitchSubmission) => void;
+  onOpenDashboardPortal?: () => void;
 }
 
 export const RegistrationModal: React.FC<RegistrationModalProps> = ({
@@ -19,8 +20,11 @@ export const RegistrationModal: React.FC<RegistrationModalProps> = ({
   onClose,
   initialTrackId = 'business',
   onSubmitSuccess,
+  onOpenDashboardPortal,
 }) => {
   const [step, setStep] = useState<1 | 2 | 3 | 4>(1);
+  const [isSubmittedSuccessfully, setIsSubmittedSuccessfully] = useState(false);
+  const [submittedSubmissionData, setSubmittedSubmissionData] = useState<PitchSubmission | null>(null);
 
   // Step 1 State: Email verification & Google Sign-In
   const [email, setEmail] = useState('');
@@ -49,6 +53,7 @@ export const RegistrationModal: React.FC<RegistrationModalProps> = ({
 
   // Step 3 State: Startup Information
   const [startupDetails, setStartupDetails] = useState({
+    teamName: '',
     startupName: '',
     trackId: initialTrackId,
     oneLiner: '',
@@ -66,12 +71,29 @@ export const RegistrationModal: React.FC<RegistrationModalProps> = ({
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState('');
+  const [step2Error, setStep2Error] = useState('');
+  const [step3Error, setStep3Error] = useState('');
+
+  const handleClose = () => {
+    setIsSubmittedSuccessfully(false);
+    setSubmittedSubmissionData(null);
+    setStep2Error('');
+    setStep3Error('');
+    setStep(1);
+    onClose();
+  };
 
   useEffect(() => {
     if (initialTrackId) {
       setStartupDetails((prev) => ({ ...prev, trackId: initialTrackId }));
     }
-    if (auth.currentUser && auth.currentUser.email) {
+    if (!isOpen) {
+      setIsSubmittedSuccessfully(false);
+      setSubmittedSubmissionData(null);
+      setStep2Error('');
+      setStep3Error('');
+      setStep(1);
+    } else if (auth.currentUser && auth.currentUser.email) {
       const u = auth.currentUser;
       setEmail(u.email);
       setIsGoogleVerified(true);
@@ -87,6 +109,13 @@ export const RegistrationModal: React.FC<RegistrationModalProps> = ({
       }
     }
   }, [initialTrackId, isOpen]);
+
+  // Auto-initialize minimum 1 team member row when entering Step 2
+  useEffect(() => {
+    if (step === 2 && teamMembers.length === 0) {
+      setTeamMembers([{ name: '', email: '', role: 'Co-Founder / CTO', phone: '' }]);
+    }
+  }, [step]);
 
   if (!isOpen) return null;
 
@@ -150,18 +179,82 @@ export const RegistrationModal: React.FC<RegistrationModalProps> = ({
   };
 
   const handleAddMember = () => {
-    if (teamMembers.length >= 5) return;
+    // Maximum 4 entries including Team Leader (1 leader + 3 members max)
+    if (teamMembers.length >= 3) {
+      setStep2Error('Maximum team size reached (4 members total including Team Leader).');
+      return;
+    }
     setTeamMembers([...teamMembers, { name: '', email: '', role: 'Co-Founder / CTO', phone: '' }]);
+    setStep2Error('');
   };
 
   const handleRemoveMember = (idx: number) => {
-    setTeamMembers(teamMembers.filter((_, i) => i !== idx));
+    const updated = teamMembers.filter((_, i) => i !== idx);
+    setTeamMembers(updated);
+    if (updated.length < 1) {
+      setStep2Error('At least 1 Co-founder / Team Member entry is required.');
+    } else {
+      setStep2Error('');
+    }
   };
 
   const handleMemberChange = (idx: number, field: keyof TeamMember, val: string) => {
     const updated = [...teamMembers];
     updated[idx][field] = val;
     setTeamMembers(updated);
+    setStep2Error('');
+  };
+
+  const handleStep2Next = () => {
+    setStep2Error('');
+
+    if (
+      !personalInfo.firstName.trim() ||
+      !personalInfo.lastName.trim() ||
+      !personalInfo.phone.trim() ||
+      !personalInfo.country.trim() ||
+      !personalInfo.institute.trim() ||
+      personalInfo.gender === 'Select Gender' ||
+      personalInfo.countryCode === 'Select or search country code' ||
+      personalInfo.professionalStatus === 'Select Status'
+    ) {
+      setStep2Error('Please fill in all required personal information fields (*)');
+      return;
+    }
+
+    if (teamMembers.length < 1) {
+      setStep2Error('Please add at least 1 Co-founder / Team Member before proceeding to the next step.');
+      return;
+    }
+
+    const hasIncomplete = teamMembers.some((m) => !m.name.trim() || !m.email.trim());
+    if (hasIncomplete) {
+      setStep2Error('Please fill in both Name and Email for all team members.');
+      return;
+    }
+
+    setStep(3);
+  };
+
+  const handleStep3Next = () => {
+    setStep3Error('');
+
+    if (!startupDetails.teamName.trim()) {
+      setStep3Error('Please enter your Team Name before proceeding.');
+      return;
+    }
+
+    if (!startupDetails.startupName.trim()) {
+      setStep3Error('Please enter your Startup / Idea Name before proceeding.');
+      return;
+    }
+
+    if (!startupDetails.oneLiner.trim()) {
+      setStep3Error('Please enter your One-Liner Elevator Pitch before proceeding.');
+      return;
+    }
+
+    setStep(4);
   };
 
   const handleDeckUploadSimulation = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -172,13 +265,19 @@ export const RegistrationModal: React.FC<RegistrationModalProps> = ({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsSubmitting(true);
     setSubmitError('');
+
+    if (!questionnaire.problemStatement.trim() || !questionnaire.solution.trim()) {
+      setSubmitError('Please fill in both Problem Statement and Proposed Solution before submitting.');
+      return;
+    }
+
+    setIsSubmitting(true);
 
     const fullName = `${personalInfo.firstName} ${personalInfo.lastName}`.trim() || 'Innovator';
 
     const registrationData = {
-      teamName: startupDetails.startupName || 'Innovative Venture',
+      teamName: startupDetails.teamName.trim() || startupDetails.startupName || 'Innovative Venture',
       leaderName: fullName,
       email: email || 'user@example.com',
       phone: personalInfo.phone || '+91 98765 43210',
@@ -247,8 +346,143 @@ export const RegistrationModal: React.FC<RegistrationModalProps> = ({
       // ignore
     }
 
+    setSubmittedSubmissionData(submission);
+    setIsSubmittedSuccessfully(true);
     onSubmitSuccess(submission);
   };
+
+  if (isSubmittedSuccessfully && submittedSubmissionData) {
+    const trackInfo = TRACKS_DATA.find((t) => t.id === submittedSubmissionData.trackId);
+    return (
+      <div className="fixed inset-0 z-50 overflow-y-auto bg-white bg-[linear-gradient(to_right,#e2e8f0_1px,transparent_1px),linear-gradient(to_bottom,#e2e8f0_1px,transparent_1px)] bg-[size:28px_28px] animate-fadeIn">
+        
+        {/* Top Header / Navbar space with Close Button */}
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <img
+              src="https://res.cloudinary.com/xabhk9g8/image/upload/v1786130806/E-Cell_Logo-Black_qdscmy.png"
+              alt="E-CELL SGU Logo"
+              className="h-9 sm:h-11 w-auto object-contain"
+            />
+            <span className="font-black text-xl sm:text-2xl text-slate-900 tracking-tight">
+              E-CELL SGU
+            </span>
+          </div>
+
+          <button
+            onClick={handleClose}
+            id="close-registration-success-btn"
+            className="flex items-center gap-2 px-4 py-2 rounded-full bg-slate-900 text-white font-bold text-xs hover:bg-slate-800 transition-colors cursor-pointer shadow-md"
+          >
+            <span>Close Form</span>
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+
+        {/* Main Registration Success Card Container */}
+        <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 flex flex-col items-center">
+          
+          {/* Solid Black Container - Matched to website dark theme aesthetics */}
+          <div className="bg-black text-white p-8 sm:p-12 rounded-2xl w-full max-w-2xl shadow-2xl relative border border-slate-950 text-center space-y-6 animate-scaleUp">
+            
+            {/* Green Right Mark / Checkmark Icon with Glowing Green Aura */}
+            <div className="relative mx-auto w-20 h-20 sm:w-24 sm:h-24 flex items-center justify-center">
+              <div className="absolute inset-0 rounded-full bg-emerald-500/20 blur-xl animate-pulse"></div>
+              <div className="relative w-20 h-20 sm:w-24 sm:h-24 rounded-full bg-emerald-950/90 border-2 border-emerald-500/60 flex items-center justify-center shadow-2xl shadow-emerald-900/50 text-emerald-400">
+                <CheckCircle2 className="w-12 h-12 sm:w-14 sm:h-14 text-emerald-500 stroke-[2.5]" />
+              </div>
+            </div>
+
+            {/* Application Submitted Tag & Title */}
+            <div className="space-y-3">
+              <span className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-emerald-950/90 border border-emerald-600/60 text-emerald-400 text-xs font-black uppercase tracking-wider shadow-sm">
+                <Check className="w-3.5 h-3.5 text-emerald-400" />
+                <span>Registration Submitted</span>
+              </span>
+
+              <h2 className="text-3xl sm:text-5xl font-black text-white tracking-tight uppercase">
+                Registration Submitted!
+              </h2>
+
+              <p className="text-xs sm:text-sm text-slate-300 max-w-lg mx-auto font-medium leading-relaxed">
+                Thank you for registering for <strong className="text-white">Eureka! 2026</strong>. Your application has been successfully submitted and is under review.
+              </p>
+            </div>
+
+            {/* Submission Reference & Details Box */}
+            <div className="bg-slate-900/90 border border-slate-800 p-5 sm:p-6 rounded-xl text-left space-y-3.5 max-w-xl mx-auto shadow-md">
+              <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+                <div>
+                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Team Reference Code</span>
+                  <span className="text-amber-400 font-mono font-black text-base tracking-wider">{submittedSubmissionData.id}</span>
+                </div>
+                <span className="px-2.5 py-1 rounded-full bg-emerald-950 border border-emerald-700/60 text-emerald-400 text-[10px] font-bold uppercase tracking-wide flex items-center gap-1">
+                  <CheckCircle2 className="w-3 h-3 text-emerald-400" />
+                  <span>Under Review</span>
+                </span>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+                <div>
+                  <span className="text-[10px] text-slate-400 font-bold uppercase block">Startup / Venture</span>
+                  <span className="text-white font-extrabold">{submittedSubmissionData.startupName}</span>
+                </div>
+
+                <div>
+                  <span className="text-[10px] text-slate-400 font-bold uppercase block">Assigned Track</span>
+                  <span className="text-blue-400 font-extrabold">{trackInfo?.name || 'Flagship Business Track'}</span>
+                </div>
+
+                <div>
+                  <span className="text-[10px] text-slate-400 font-bold uppercase block">Team Lead</span>
+                  <span className="text-slate-200 font-semibold">{submittedSubmissionData.teamLead.name}</span>
+                </div>
+
+                <div>
+                  <span className="text-[10px] text-slate-400 font-bold uppercase block">Submission Date</span>
+                  <span className="text-slate-300 font-medium">{submittedSubmissionData.submittedAt}</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Information Note */}
+            <p className="text-xs text-slate-400 max-w-md mx-auto leading-relaxed">
+              Our evaluation panel is reviewing your pitch deck. You can access your full submission portal anytime via the website header.
+            </p>
+
+            {/* Action Buttons */}
+            <div className="pt-2 flex flex-col sm:flex-row items-center justify-center gap-3">
+              <button
+                type="button"
+                onClick={handleClose}
+                id="done-registration-btn"
+                className="w-full sm:w-auto px-8 py-3.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-black text-xs uppercase tracking-wider transition-all cursor-pointer shadow-lg shadow-emerald-600/30 flex items-center justify-center gap-2 hover:scale-[1.02]"
+              >
+                <CheckCircle2 className="w-4 h-4" />
+                <span>Done</span>
+              </button>
+
+              {onOpenDashboardPortal && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    handleClose();
+                    onOpenDashboardPortal();
+                  }}
+                  id="view-portal-from-success-btn"
+                  className="w-full sm:w-auto px-6 py-3.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-200 font-bold text-xs transition-all cursor-pointer border border-slate-800 flex items-center justify-center gap-2"
+                >
+                  <span>View Application Portal</span>
+                </button>
+              )}
+            </div>
+
+          </div>
+
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto bg-white bg-[linear-gradient(to_right,#e2e8f0_1px,transparent_1px),linear-gradient(to_bottom,#e2e8f0_1px,transparent_1px)] bg-[size:28px_28px] animate-fadeIn">
@@ -267,7 +501,7 @@ export const RegistrationModal: React.FC<RegistrationModalProps> = ({
         </div>
 
         <button
-          onClick={onClose}
+          onClick={handleClose}
           id="close-registration-page-btn"
           className="flex items-center gap-2 px-4 py-2 rounded-full bg-slate-900 text-white font-bold text-xs hover:bg-slate-800 transition-colors cursor-pointer shadow-md"
         >
@@ -694,47 +928,70 @@ export const RegistrationModal: React.FC<RegistrationModalProps> = ({
                   />
                 </div>
 
-                {/* Additional Team Members */}
+                {/* Additional Team Members - Minimum 1 Entry Required, Maximum 4 Total Including Team Leader */}
                 <div className="pt-4 border-t border-slate-800 space-y-3">
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs font-bold text-slate-300">
-                      Co-founders & Team Members (Optional)
-                    </span>
-                    <button
-                      type="button"
-                      onClick={handleAddMember}
-                      className="flex items-center gap-1 text-xs font-bold text-blue-400 hover:text-blue-300 cursor-pointer"
-                    >
-                      <Plus className="w-4 h-4" />
-                      <span>Add Member</span>
-                    </button>
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                    <div>
+                      <span className="text-xs font-bold text-slate-300 flex items-center gap-1">
+                        <span>Co-founders & Team Members</span>
+                        <span className="text-red-500">*</span>
+                      </span>
+                      <span className="text-[11px] text-slate-400 font-normal block">
+                        Minimum 1 team member required (Max 4 members total including Team Leader)
+                      </span>
+                    </div>
+
+                    <div className="flex items-center gap-2.5">
+                      <span className="text-[11px] font-mono font-bold text-emerald-400 bg-slate-900 px-2.5 py-1 rounded border border-slate-800 shrink-0">
+                        {1 + teamMembers.length}/4 Total Team Size
+                      </span>
+                      {teamMembers.length < 3 && (
+                        <button
+                          type="button"
+                          onClick={handleAddMember}
+                          className="flex items-center gap-1 text-xs font-bold text-blue-400 hover:text-blue-300 cursor-pointer bg-blue-950/60 px-3 py-1 rounded-lg border border-blue-800/60 transition-colors shrink-0"
+                        >
+                          <Plus className="w-4 h-4" />
+                          <span>Add Member</span>
+                        </button>
+                      )}
+                    </div>
                   </div>
 
                   {teamMembers.map((member, idx) => (
                     <div key={idx} className="p-3 bg-slate-900 rounded-lg border border-slate-800 flex items-center gap-3">
                       <input
                         type="text"
-                        placeholder="Member Name"
+                        required
+                        placeholder={`Team Member ${idx + 1} Name *`}
                         value={member.name}
                         onChange={(e) => handleMemberChange(idx, 'name', e.target.value)}
-                        className="flex-1 bg-[#f8fafc] text-slate-900 rounded-md px-3 py-1.5 text-xs font-medium"
+                        className="flex-1 bg-[#f8fafc] text-slate-900 rounded-md px-3 py-2 text-xs font-medium focus:outline-none focus:ring-2 focus:ring-blue-500"
                       />
                       <input
                         type="email"
-                        placeholder="Member Email"
+                        required
+                        placeholder={`Team Member ${idx + 1} Email *`}
                         value={member.email}
                         onChange={(e) => handleMemberChange(idx, 'email', e.target.value)}
-                        className="flex-1 bg-[#f8fafc] text-slate-900 rounded-md px-3 py-1.5 text-xs font-medium"
+                        className="flex-1 bg-[#f8fafc] text-slate-900 rounded-md px-3 py-2 text-xs font-medium focus:outline-none focus:ring-2 focus:ring-blue-500"
                       />
                       <button
                         type="button"
                         onClick={() => handleRemoveMember(idx)}
-                        className="p-1 text-slate-500 hover:text-rose-400 cursor-pointer"
+                        title="Remove member"
+                        className="p-1 text-slate-500 hover:text-rose-400 cursor-pointer transition-colors"
                       >
                         <Trash2 className="w-4 h-4" />
                       </button>
                     </div>
                   ))}
+
+                  {step2Error && (
+                    <p className="text-red-400 text-xs font-semibold bg-red-950/70 p-3 rounded-lg border border-red-900/60 animate-fadeIn">
+                      {step2Error}
+                    </p>
+                  )}
                 </div>
 
                 <div className="pt-6 flex items-center justify-between">
@@ -747,10 +1004,10 @@ export const RegistrationModal: React.FC<RegistrationModalProps> = ({
                   </button>
                   <button
                     type="button"
-                    onClick={() => setStep(3)}
-                    className="bg-[#475569] hover:bg-slate-600 text-white font-bold px-8 py-3 rounded-lg text-sm transition-colors cursor-pointer"
+                    onClick={handleStep2Next}
+                    className="bg-[#2563eb] hover:bg-blue-700 text-white font-bold px-8 py-3 rounded-lg text-sm transition-colors cursor-pointer shadow-lg shadow-blue-600/30 flex items-center gap-2"
                   >
-                    Next
+                    <span>Next Step →</span>
                   </button>
                 </div>
               </div>
@@ -760,6 +1017,25 @@ export const RegistrationModal: React.FC<RegistrationModalProps> = ({
             {step === 3 && (
               <div className="space-y-6 pt-2 animate-fadeIn">
                 <div className="space-y-4">
+                  {/* Team Name */}
+                  <div>
+                    <label className="block text-xs font-semibold text-white mb-2">
+                      Team Name <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      placeholder="e.g. Team Apex Innovators"
+                      value={startupDetails.teamName}
+                      onChange={(e) => {
+                        setStartupDetails({ ...startupDetails, teamName: e.target.value });
+                        setStep3Error('');
+                      }}
+                      className="w-full bg-[#f8fafc] text-slate-900 rounded-lg px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 font-medium"
+                    />
+                  </div>
+
+                  {/* Startup / Idea Name */}
                   <div>
                     <label className="block text-xs font-semibold text-white mb-2">
                       Startup / Idea Name <span className="text-red-500">*</span>
@@ -769,11 +1045,15 @@ export const RegistrationModal: React.FC<RegistrationModalProps> = ({
                       required
                       placeholder="e.g. AeroClean Technologies"
                       value={startupDetails.startupName}
-                      onChange={(e) => setStartupDetails({ ...startupDetails, startupName: e.target.value })}
-                      className="w-full bg-[#f8fafc] text-slate-900 rounded-lg px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      onChange={(e) => {
+                        setStartupDetails({ ...startupDetails, startupName: e.target.value });
+                        setStep3Error('');
+                      }}
+                      className="w-full bg-[#f8fafc] text-slate-900 rounded-lg px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 font-medium"
                     />
                   </div>
 
+                  {/* One-Liner Elevator Pitch */}
                   <div>
                     <label className="block text-xs font-semibold text-white mb-2">
                       One-Liner Elevator Pitch <span className="text-red-500">*</span>
@@ -783,19 +1063,28 @@ export const RegistrationModal: React.FC<RegistrationModalProps> = ({
                       required
                       placeholder="e.g. AI-powered robotics for solar farm efficiency reducing water usage by 90%."
                       value={startupDetails.oneLiner}
-                      onChange={(e) => setStartupDetails({ ...startupDetails, oneLiner: e.target.value })}
-                      className="w-full bg-[#f8fafc] text-slate-900 rounded-lg px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      onChange={(e) => {
+                        setStartupDetails({ ...startupDetails, oneLiner: e.target.value });
+                        setStep3Error('');
+                      }}
+                      className="w-full bg-[#f8fafc] text-slate-900 rounded-lg px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 font-medium"
                     />
                   </div>
 
+                  {/* Development Stage */}
                   <div>
-                    <label className="block text-xs font-semibold text-white mb-2">Development Stage</label>
+                    <label className="block text-xs font-semibold text-white mb-2">
+                      Development Stage <span className="text-red-500">*</span>
+                    </label>
                     <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                       {['Idea', 'Prototype/MVP', 'Early Traction', 'Revenue Generating'].map((stg) => (
                         <button
                           type="button"
                           key={stg}
-                          onClick={() => setStartupDetails({ ...startupDetails, stage: stg as any })}
+                          onClick={() => {
+                            setStartupDetails({ ...startupDetails, stage: stg as any });
+                            setStep3Error('');
+                          }}
                           className={`py-2 px-3 rounded-lg text-xs font-bold border transition-all cursor-pointer ${
                             startupDetails.stage === stg
                               ? 'bg-[#2563eb] text-white border-blue-500'
@@ -807,6 +1096,12 @@ export const RegistrationModal: React.FC<RegistrationModalProps> = ({
                       ))}
                     </div>
                   </div>
+
+                  {step3Error && (
+                    <p className="text-red-400 text-xs font-semibold bg-red-950/70 p-3 rounded-lg border border-red-900/60 animate-fadeIn">
+                      {step3Error}
+                    </p>
+                  )}
                 </div>
 
                 <div className="pt-6 flex items-center justify-between">
@@ -819,10 +1114,10 @@ export const RegistrationModal: React.FC<RegistrationModalProps> = ({
                   </button>
                   <button
                     type="button"
-                    onClick={() => setStep(4)}
-                    className="bg-[#2563eb] hover:bg-blue-700 text-white font-bold px-8 py-2.5 rounded-lg text-sm transition-colors cursor-pointer"
+                    onClick={handleStep3Next}
+                    className="bg-[#2563eb] hover:bg-blue-700 text-white font-bold px-8 py-3 rounded-lg text-sm transition-colors cursor-pointer shadow-lg shadow-blue-600/30 flex items-center gap-2"
                   >
-                    Next
+                    <span>Next Step →</span>
                   </button>
                 </div>
               </div>
@@ -913,6 +1208,12 @@ export const RegistrationModal: React.FC<RegistrationModalProps> = ({
                       </label>
                     </div>
                   </div>
+
+                  {submitError && (
+                    <p className="text-red-400 text-xs font-semibold bg-red-950/70 p-3 rounded-lg border border-red-900/60 animate-fadeIn">
+                      {submitError}
+                    </p>
+                  )}
                 </div>
 
                 <div className="pt-6 flex items-center justify-between border-t border-slate-800">

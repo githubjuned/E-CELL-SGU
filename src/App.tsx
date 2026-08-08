@@ -75,8 +75,6 @@ export default function App() {
     } catch (e) {
       // ignore
     }
-    setIsRegisterOpen(false);
-    setIsDashboardOpen(true);
   };
 
   const renderActiveSection = () => {
@@ -158,6 +156,7 @@ export default function App() {
         onClose={() => setIsRegisterOpen(false)}
         initialTrackId={selectedTrackId}
         onSubmitSuccess={handleSubmissionSuccess}
+        onOpenDashboardPortal={() => setIsDashboardOpen(true)}
       />
 
       <DashboardModal

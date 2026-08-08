@@ -34,7 +34,6 @@
 
 .animate-marquee-left:hover,
 .animate-marquee-left:active,
-.animate-[#row1]:hover,
 .animate-marquee-right:hover,
 .animate-marquee-right:active {
   animation-play-state: paused;

@@ -186,49 +186,54 @@ const TEAM_CONTACTS: ContactPerson[] = [
 ];
 
 export const ContactSection: React.FC = () => {
-  const renderContactCard = (person: ContactPerson, idx: number) => (
-    <div
-      key={idx}
-      className="bg-black rounded-2xl p-3 sm:p-4 relative flex flex-col justify-between shadow-xl border border-slate-900 group hover:scale-[1.03] transition-all duration-300 w-full sm:w-[calc(50%-16px)] lg:w-[calc(25%-18px)] max-w-[320px]"
-    >
-      {/* Compact Photo Container */}
-      <div className="relative aspect-4/5 rounded-xl overflow-hidden bg-slate-900 mb-3 flex items-center justify-center">
-        <img
-          src={person.image}
-          alt={person.name}
-          className="w-full h-full object-cover object-top group-hover:scale-105 transition-transform duration-500"
-          loading="lazy"
-        />
+  const renderContactCard = (person: ContactPerson, idx: number) => {
+    const showIcons = person.name === 'Krushna Jalindar Gadhe' || person.name === 'Rajeev Rana';
 
-        {/* Right floating action icon buttons */}
-        <div className="absolute right-2 top-1/2 -translate-y-1/2 flex flex-col gap-2 z-10">
-          <a
-            href={`mailto:${person.email}`}
-            title="Send Email"
-            className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-white text-slate-900 hover:bg-blue-600 hover:text-white transition-all flex items-center justify-center shadow-md hover:scale-110"
-          >
-            <Mail className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-          </a>
-          <a
-            href={person.whatsapp}
-            target="_blank"
-            rel="noopener noreferrer"
-            title="Chat on WhatsApp"
-            className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-white text-slate-900 hover:bg-emerald-600 hover:text-white transition-all flex items-center justify-center shadow-md hover:scale-110"
-          >
-            <MessageCircle className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-          </a>
-          <a
-            href={person.linkedIn}
-            target="_blank"
-            rel="noopener noreferrer"
-            title="LinkedIn Profile"
-            className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-white text-slate-900 hover:bg-blue-700 hover:text-white transition-all flex items-center justify-center shadow-md hover:scale-110"
-          >
-            <Linkedin className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-          </a>
+    return (
+      <div
+        key={idx}
+        className="bg-black rounded-2xl p-3 sm:p-4 relative flex flex-col justify-between shadow-xl border border-slate-900 group hover:scale-[1.03] transition-all duration-300 w-full sm:w-[calc(50%-16px)] lg:w-[calc(25%-18px)] max-w-[320px]"
+      >
+        {/* Compact Photo Container */}
+        <div className="relative aspect-4/5 rounded-xl overflow-hidden bg-slate-900 mb-3 flex items-center justify-center">
+          <img
+            src={person.image}
+            alt={person.name}
+            className="w-full h-full object-cover object-top group-hover:scale-105 transition-transform duration-500"
+            loading="lazy"
+          />
+
+          {/* Right floating action icon buttons - Only shown for Krushna Jalindar Gadhe & Rajeev Rana */}
+          {showIcons && (
+            <div className="absolute right-2 top-1/2 -translate-y-1/2 flex flex-col gap-2 z-10">
+              <a
+                href={`mailto:${person.email}`}
+                title="Send Email"
+                className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-white text-slate-900 hover:bg-blue-600 hover:text-white transition-all flex items-center justify-center shadow-md hover:scale-110"
+              >
+                <Mail className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+              </a>
+              <a
+                href={person.whatsapp}
+                target="_blank"
+                rel="noopener noreferrer"
+                title="Chat on WhatsApp"
+                className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-white text-slate-900 hover:bg-emerald-600 hover:text-white transition-all flex items-center justify-center shadow-md hover:scale-110"
+              >
+                <MessageCircle className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+              </a>
+              <a
+                href={person.linkedIn}
+                target="_blank"
+                rel="noopener noreferrer"
+                title="LinkedIn Profile"
+                className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-white text-slate-900 hover:bg-blue-700 hover:text-white transition-all flex items-center justify-center shadow-md hover:scale-110"
+              >
+                <Linkedin className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+              </a>
+            </div>
+          )}
         </div>
-      </div>
 
       {/* Person details */}
       <div className="text-center space-y-0.5">
@@ -241,6 +246,7 @@ export const ContactSection: React.FC = () => {
       </div>
     </div>
   );
+};
 
   return (
     <section id="contact" className="py-16 sm:py-24 bg-[#a4c5e4] text-slate-900 relative overflow-hidden">

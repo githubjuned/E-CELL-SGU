@@ -1,5 +1,5 @@
 import React from 'react';
-import { Rocket, ExternalLink, ArrowUp } from 'lucide-react';
+import { Rocket, ExternalLink, ArrowUp, Sparkles } from 'lucide-react';
 
 interface FooterProps {
   onNavigate: (sectionId: string) => void;
@@ -97,13 +97,22 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate, onOpenRegister }) =>
             © 2026 Entrepreneurship Cell, IIT Bombay. All rights reserved.
           </div>
 
-          {/* Premium "Designed by AUTHENEX" Branding Badge */}
-          <div className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-slate-900/90 border border-slate-800/90 text-[11px] font-medium text-slate-400 shadow-sm hover:border-blue-500/40 transition-all duration-300 group cursor-default">
-            <span className="text-slate-400 group-hover:text-slate-300 transition-colors">Designed by</span>
-            <span className="font-black tracking-wider bg-gradient-to-r from-blue-400 via-indigo-300 to-emerald-400 bg-clip-text text-transparent uppercase text-[11px]">
+          {/* Premium "Designed by AUTHENEX" Prominent Branding Button */}
+          <a
+            href="https://authenex.in"
+            target="_blank"
+            rel="noopener noreferrer"
+            title="Visit AUTHENEX Official Website (authenex.in)"
+            className="group relative inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-slate-900/90 hover:bg-slate-900 border-2 border-blue-500/50 hover:border-blue-400 text-xs sm:text-sm font-extrabold text-white shadow-xl shadow-blue-950/50 hover:shadow-blue-500/30 transition-all duration-300 hover:scale-105 cursor-pointer ring-1 ring-white/10"
+          >
+            <div className="absolute -inset-0.5 rounded-xl bg-gradient-to-r from-blue-600 via-indigo-500 to-emerald-500 opacity-40 group-hover:opacity-100 blur-sm transition-all duration-500 -z-10" />
+            <span className="text-slate-300 font-semibold text-xs tracking-wide">Designed by</span>
+            <span className="font-black text-sm sm:text-base tracking-widest bg-gradient-to-r from-blue-400 via-cyan-300 to-emerald-400 bg-clip-text text-transparent uppercase group-hover:brightness-125 transition-all">
               AUTHENEX
             </span>
-          </div>
+            <Sparkles className="w-4 h-4 text-amber-400 animate-pulse group-hover:rotate-12 transition-transform" />
+            <ExternalLink className="w-3.5 h-3.5 text-blue-400 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
+          </a>
 
           <div className="flex items-center gap-4">
             <button
