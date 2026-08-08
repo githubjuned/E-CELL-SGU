@@ -94,13 +94,13 @@ const TEAM_CONTACTS: ContactPerson[] = [
     image: 'https://res.cloudinary.com/xabhk9g8/image/upload/v1786128255/WhatsApp_Image_2026-08-07_at_23.06.27_s73egz.jpg',
   },
   {
-    name: 'Pritam Patil',
-    role: 'DIRECTOR OF PHOTOGRAPHY (DOP)',
-    email: 'pritampatil5676@gmail.com',
-    phone: '+91 8237427271',
-    linkedIn: 'https://www.linkedin.com/in/pritam-patil-238940375?utm_source=share_via&utm_content=profile&utm_medium=member_android',
-    whatsapp: 'https://wa.me/918237427271',
-    image: 'https://res.cloudinary.com/xabhk9g8/image/upload/v1786132536/WhatsApp_Image_2026-08-08_at_01.24.32_nzteo7.jpg',
+    name: 'Manogna Reddy',
+    role: 'MARKETING & BRANDING MANAGERS',
+    email: 'srimanogna234@gmail.com',
+    phone: '+91 6301666123',
+    linkedIn: 'https://www.linkedin.com/in/sri-manogna-9454b8384/',
+    whatsapp: 'https://wa.me/916301666123',
+    image: 'https://res.cloudinary.com/xabhk9g8/image/upload/v1786129480/WhatsApp_Image_2026-08-07_at_23.12.12_ujcjtt.jpg',
   },
   {
     name: 'Vaishnav Musmade',
@@ -157,13 +157,13 @@ const TEAM_CONTACTS: ContactPerson[] = [
     image: 'https://res.cloudinary.com/xabhk9g8/image/upload/v1786129334/WhatsApp_Image_2026-08-07_at_23.12.12_mvk2tk.jpg',
   },
   {
-    name: 'Manogna Reddy',
-    role: 'MARKETING & BRANDING MANAGERS',
-    email: 'srimanogna234@gmail.com',
-    phone: '+91 6301666123',
-    linkedIn: 'https://www.linkedin.com/in/sri-manogna-9454b8384/',
-    whatsapp: 'https://wa.me/916301666123',
-    image: 'https://res.cloudinary.com/xabhk9g8/image/upload/v1786129480/WhatsApp_Image_2026-08-07_at_23.12.12_ujcjtt.jpg',
+    name: 'Pritam Patil',
+    role: 'DIRECTOR OF PHOTOGRAPHY (DOP)',
+    email: 'pritampatil5676@gmail.com',
+    phone: '+91 8237427271',
+    linkedIn: 'https://www.linkedin.com/in/pritam-patil-238940375?utm_source=share_via&utm_content=profile&utm_medium=member_android',
+    whatsapp: 'https://wa.me/918237427271',
+    image: 'https://res.cloudinary.com/xabhk9g8/image/upload/v1786132536/WhatsApp_Image_2026-08-08_at_01.24.32_nzteo7.jpg',
   },
   {
     name: 'Nirbhay Gawad',
@@ -247,23 +247,23 @@ export const ContactSection: React.FC = () => {
           )}
         </div>
 
-      {/* Person details */}
-      <div className="text-center space-y-0.5">
-        <h4 className="text-white font-black text-sm sm:text-base tracking-tight truncate">
-          {person.name}
-        </h4>
-        <p className="text-blue-400 font-bold text-[10px] sm:text-xs uppercase tracking-wide truncate">
-          {person.role}
-        </p>
+        {/* Person details */}
+        <div className="text-center space-y-0.5">
+          <h4 className="text-white font-black text-sm sm:text-base tracking-tight truncate">
+            {person.name}
+          </h4>
+          <p className="text-blue-400 font-bold text-[10px] sm:text-xs uppercase tracking-wide truncate">
+            {person.role}
+          </p>
+        </div>
       </div>
-    </div>
-  );
-};
+    );
+  };
 
   return (
     <section id="contact" className="py-16 sm:py-24 bg-[#a4c5e4] text-slate-900 relative overflow-hidden">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-        
+
         {/* Main Title */}
         <div className="text-center mb-10 sm:mb-14">
           <h1 className="text-5xl sm:text-7xl md:text-8xl font-black text-[#0c2340] tracking-tight uppercase">
