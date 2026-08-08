@@ -187,7 +187,7 @@ const TEAM_CONTACTS: ContactPerson[] = [
 
 export const ContactSection: React.FC = () => {
   const renderContactCard = (person: ContactPerson, idx: number) => {
-    const showIcons = person.name === 'Krushna Jalindar Gadhe' || person.name === 'Rajeev Rana';
+    const isFullContact = person.name === 'Krushna Jalindar Gadhe' || person.name === 'Rajeev Rana';
 
     return (
       <div
@@ -203,8 +203,8 @@ export const ContactSection: React.FC = () => {
             loading="lazy"
           />
 
-          {/* Right floating action icon buttons - Only shown for Krushna Jalindar Gadhe & Rajeev Rana */}
-          {showIcons && (
+          {/* Right floating action icon buttons */}
+          {isFullContact ? (
             <div className="absolute right-2 top-1/2 -translate-y-1/2 flex flex-col gap-2 z-10">
               <a
                 href={`mailto:${person.email}`}
@@ -230,6 +230,18 @@ export const ContactSection: React.FC = () => {
                 className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-white text-slate-900 hover:bg-blue-700 hover:text-white transition-all flex items-center justify-center shadow-md hover:scale-110"
               >
                 <Linkedin className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+              </a>
+            </div>
+          ) : (
+            <div className="absolute right-2 top-1/2 -translate-y-1/2 flex flex-col z-10">
+              <a
+                href={person.linkedIn}
+                target="_blank"
+                rel="noopener noreferrer"
+                title={`${person.name} LinkedIn Profile`}
+                className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-white text-slate-900 hover:bg-blue-700 hover:text-white transition-all flex items-center justify-center shadow-md hover:scale-110"
+              >
+                <Linkedin className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-blue-700 hover:text-white" />
               </a>
             </div>
           )}
