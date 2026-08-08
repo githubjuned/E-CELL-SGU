@@ -12,7 +12,6 @@ interface RegistrationModalProps {
   onClose: () => void;
   initialTrackId?: TrackId;
   onSubmitSuccess: (submission: PitchSubmission) => void;
-  onOpenDashboardPortal?: () => void;
 }
 
 export const RegistrationModal: React.FC<RegistrationModalProps> = ({
@@ -20,7 +19,6 @@ export const RegistrationModal: React.FC<RegistrationModalProps> = ({
   onClose,
   initialTrackId = 'business',
   onSubmitSuccess,
-  onOpenDashboardPortal,
 }) => {
   const [step, setStep] = useState<1 | 2 | 3 | 4>(1);
   const [isSubmittedSuccessfully, setIsSubmittedSuccessfully] = useState(false);
@@ -447,7 +445,7 @@ export const RegistrationModal: React.FC<RegistrationModalProps> = ({
 
             {/* Information Note */}
             <p className="text-xs text-slate-400 max-w-md mx-auto leading-relaxed">
-              Our evaluation panel is reviewing your pitch deck. You can access your full submission portal anytime via the website header.
+              Our evaluation panel is reviewing your pitch deck submission. We will contact you via your registered email address with updates.
             </p>
 
             {/* Action Buttons */}
@@ -461,20 +459,6 @@ export const RegistrationModal: React.FC<RegistrationModalProps> = ({
                 <CheckCircle2 className="w-4 h-4" />
                 <span>Done</span>
               </button>
-
-              {onOpenDashboardPortal && (
-                <button
-                  type="button"
-                  onClick={() => {
-                    handleClose();
-                    onOpenDashboardPortal();
-                  }}
-                  id="view-portal-from-success-btn"
-                  className="w-full sm:w-auto px-6 py-3.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-200 font-bold text-xs transition-all cursor-pointer border border-slate-800 flex items-center justify-center gap-2"
-                >
-                  <span>View Application Portal</span>
-                </button>
-              )}
             </div>
 
           </div>

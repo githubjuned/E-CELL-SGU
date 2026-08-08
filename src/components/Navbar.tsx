@@ -7,9 +7,6 @@ interface NavbarProps {
   activeSection: string;
   onNavigate: (sectionId: string) => void;
   onOpenRegister: () => void;
-  onOpenDashboard: () => void;
-  hasSubmission: boolean;
-  registeredName?: string;
   authUser?: FirebaseUser | null;
   onSignOut?: () => void;
 }
@@ -18,9 +15,6 @@ export const Navbar: React.FC<NavbarProps> = ({
   activeSection,
   onNavigate,
   onOpenRegister,
-  onOpenDashboard,
-  hasSubmission,
-  registeredName,
   authUser,
   onSignOut,
 }) => {
@@ -147,22 +141,12 @@ export const Navbar: React.FC<NavbarProps> = ({
             </button>
           )}
 
-          {hasSubmission ? (
-            <button
-              onClick={onOpenDashboard}
-              className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-blue-50 text-blue-700 border border-blue-200 font-semibold text-xs hover:bg-blue-100 transition-colors cursor-pointer"
-            >
-              <User className="w-3.5 h-3.5" />
-              <span>Portal ({registeredName || 'Dashboard'})</span>
-            </button>
-          ) : (
-            <button
-              onClick={onOpenRegister}
-              className="hidden sm:flex items-center gap-1 px-4 py-1.5 rounded-full bg-blue-600 hover:bg-blue-700 text-white font-extrabold text-xs shadow-md transition-all cursor-pointer hover:scale-[1.02]"
-            >
-              <span>Register Now</span>
-            </button>
-          )}
+          <button
+            onClick={onOpenRegister}
+            className="hidden sm:flex items-center gap-1 px-4 py-1.5 rounded-full bg-blue-600 hover:bg-blue-700 text-white font-extrabold text-xs shadow-md transition-all cursor-pointer hover:scale-[1.02]"
+          >
+            <span>Register Now</span>
+          </button>
         </div>
 
         {/* Mobile Menu Toggle */}
@@ -218,27 +202,15 @@ export const Navbar: React.FC<NavbarProps> = ({
               </button>
             )}
 
-            {hasSubmission ? (
-              <button
-                onClick={() => {
-                  onOpenDashboard();
-                  setMobileMenuOpen(false);
-                }}
-                className="w-full text-xs font-bold text-slate-700 text-center py-2 bg-blue-50 border border-blue-200 rounded-md"
-              >
-                My Application Portal ({registeredName || 'Dashboard'})
-              </button>
-            ) : (
-              <button
-                onClick={() => {
-                  onOpenRegister();
-                  setMobileMenuOpen(false);
-                }}
-                className="w-full text-xs font-bold text-white text-center py-2 bg-blue-600 rounded-md"
-              >
-                Register Now
-              </button>
-            )}
+            <button
+              onClick={() => {
+                onOpenRegister();
+                setMobileMenuOpen(false);
+              }}
+              className="w-full text-xs font-bold text-white text-center py-2 bg-blue-600 rounded-md"
+            >
+              Register Now
+            </button>
           </div>
         </div>
       )}

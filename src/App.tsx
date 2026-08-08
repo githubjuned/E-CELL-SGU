@@ -16,7 +16,6 @@ import { FAQSection } from './components/FAQSection';
 import { ContactSection } from './components/ContactSection';
 import { Footer } from './components/Footer';
 import { RegistrationModal } from './components/RegistrationModal';
-import { DashboardModal } from './components/DashboardModal';
 import { TeaserModal } from './components/TeaserModal';
 import { TrackId, PitchSubmission } from './types';
 import { onAuthStateChanged, User as FirebaseUser, signOut } from 'firebase/auth';
@@ -26,7 +25,6 @@ export default function App() {
   const [activeSection, setActiveSection] = useState<string>('home');
   const [isRegisterOpen, setIsRegisterOpen] = useState<boolean>(false);
   const [selectedTrackId, setSelectedTrackId] = useState<TrackId>('business');
-  const [isDashboardOpen, setIsDashboardOpen] = useState<boolean>(false);
   const [isTeaserOpen, setIsTeaserOpen] = useState<boolean>(false);
   const [authUser, setAuthUser] = useState<FirebaseUser | null>(null);
 
@@ -132,9 +130,6 @@ export default function App() {
         activeSection={activeSection}
         onNavigate={handleNavigate}
         onOpenRegister={handleOpenRegister}
-        onOpenDashboard={() => setIsDashboardOpen(true)}
-        hasSubmission={!!mySubmission}
-        registeredName={mySubmission?.startupName}
         authUser={authUser}
         onSignOut={handleSignOut}
       />
@@ -156,13 +151,6 @@ export default function App() {
         onClose={() => setIsRegisterOpen(false)}
         initialTrackId={selectedTrackId}
         onSubmitSuccess={handleSubmissionSuccess}
-        onOpenDashboardPortal={() => setIsDashboardOpen(true)}
-      />
-
-      <DashboardModal
-        isOpen={isDashboardOpen}
-        onClose={() => setIsDashboardOpen(false)}
-        submission={mySubmission}
       />
 
       <TeaserModal
