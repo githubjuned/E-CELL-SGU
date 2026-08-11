@@ -18,7 +18,6 @@ import { Footer } from './components/Footer';
 import { RegistrationModal } from './components/RegistrationModal';
 import { TeaserModal } from './components/TeaserModal';
 import { TrackId, PitchSubmission } from './types';
-import { onAuthStateChanged, User as FirebaseUser, signOut, getRedirectResult } from 'firebase/auth';
 import { auth } from './lib/firebase';
 
 export default function App() {
@@ -26,41 +25,6 @@ export default function App() {
   const [isRegisterOpen, setIsRegisterOpen] = useState<boolean>(false);
   const [selectedTrackId, setSelectedTrackId] = useState<TrackId>('business');
   const [isTeaserOpen, setIsTeaserOpen] = useState<boolean>(false);
-  const [authUser, setAuthUser] = useState<FirebaseUser | null>(null);
-
-  // Real-time Firebase Auth Listener
-  useEffect(() => {
-    console.log('[App] Checking getRedirectResult...');
-    getRedirectResult(auth).then((result) => {
-      if (result) {
-        console.log('[Auth Redirect Result SUCCESS]:', result.user);
-      } else {
-        console.log('[Auth Redirect Result]: No redirect result found.');
-      }
-    }).catch((error) => {
-      console.error('[Auth Redirect Result ERROR]:', {
-        code: error?.code,
-        message: error?.message,
-        customData: error?.customData,
-        cause: error?.cause,
-        fullError: error
-      });
-      alert(`Firebase Redirect Error: ${error?.code} - ${error?.message}\nCheck console for the full object and network responses.`);
-    });
-
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-      setAuthUser(user);
-    });
-    return () => unsubscribe();
-  }, []);
-
-  const handleSignOut = async () => {
-    try {
-      await signOut(auth);
-    } catch (err) {
-      console.error('Sign out error:', err);
-    }
-  };
 
   // Persistence for user registration submission
   const [mySubmission, setMySubmission] = useState<PitchSubmission | null>(() => {
@@ -148,8 +112,6 @@ export default function App() {
         activeSection={activeSection}
         onNavigate={handleNavigate}
         onOpenRegister={handleOpenRegister}
-        authUser={authUser}
-        onSignOut={handleSignOut}
       />
 
       {/* Main Content Area based on active navigation tab */}

@@ -4,8 +4,7 @@ import { TRACKS_DATA } from '../data/eurekaData';
 import confetti from 'canvas-confetti';
 import { X, CheckCircle2, Upload, Plus, Trash2, Loader2, AlertTriangle, Copy, Check, ExternalLink, ShieldAlert } from 'lucide-react';
 import { collection, addDoc } from 'firebase/firestore';
-import { GoogleAuthProvider, signInWithPopup, signInWithRedirect } from 'firebase/auth';
-import { db, auth } from '../lib/firebase';
+import { db } from '../lib/firebase';
 
 interface RegistrationModalProps {
   isOpen: boolean;
@@ -24,15 +23,9 @@ export const RegistrationModal: React.FC<RegistrationModalProps> = ({
   const [isSubmittedSuccessfully, setIsSubmittedSuccessfully] = useState(false);
   const [submittedSubmissionData, setSubmittedSubmissionData] = useState<PitchSubmission | null>(null);
 
-  // Step 1 State: Email verification & Google Sign-In
+  // Step 1 State: Email Entry
   const [email, setEmail] = useState('');
-  const [isGoogleSigningIn, setIsGoogleSigningIn] = useState(false);
-  const [isGoogleVerified, setIsGoogleVerified] = useState(false);
   const [emailError, setEmailError] = useState('');
-  const [unauthorizedDomain, setUnauthorizedDomain] = useState('');
-  const [showDomainGuide, setShowDomainGuide] = useState(false);
-  const [showProviderGuide, setShowProviderGuide] = useState(false);
-  const [copiedDomain, setCopiedDomain] = useState(false);
 
   // Step 2 State: Personal Information
   const [personalInfo, setPersonalInfo] = useState({
@@ -91,20 +84,6 @@ export const RegistrationModal: React.FC<RegistrationModalProps> = ({
       setStep2Error('');
       setStep3Error('');
       setStep(1);
-    } else if (auth.currentUser && auth.currentUser.email) {
-      const u = auth.currentUser;
-      setEmail(u.email);
-      setIsGoogleVerified(true);
-      if (u.displayName) {
-        const parts = u.displayName.trim().split(' ');
-        const fName = parts[0] || '';
-        const lName = parts.slice(1).join(' ') || '';
-        setPersonalInfo((prev) => ({
-          ...prev,
-          firstName: prev.firstName || fName,
-          lastName: prev.lastName || lName,
-        }));
-      }
     }
   }, [initialTrackId, isOpen]);
 
@@ -117,77 +96,7 @@ export const RegistrationModal: React.FC<RegistrationModalProps> = ({
 
   if (!isOpen) return null;
 
-  const handleGoogleSignIn = async () => {
-    setEmailError('');
-    setShowDomainGuide(false);
-    setShowProviderGuide(false);
-    setIsGoogleSigningIn(true);
-    try {
-      const provider = new GoogleAuthProvider();
-      provider.setCustomParameters({ prompt: 'select_account' });
-      
-      const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-      if (isMobile) {
-        await signInWithRedirect(auth, provider);
-        return;
-      }
-      
-      const result = await signInWithPopup(auth, provider);
-      const user = result.user;
-      
-      if (user && user.email) {
-        setEmail(user.email);
-        setIsGoogleVerified(true);
 
-        // Pre-fill name in Step 2 if available from Google account
-        if (user.displayName) {
-          const parts = user.displayName.trim().split(' ');
-          const fName = parts[0] || '';
-          const lName = parts.slice(1).join(' ') || '';
-          setPersonalInfo(prev => ({
-            ...prev,
-            firstName: prev.firstName || fName,
-            lastName: prev.lastName || lName
-          }));
-        }
-
-        // Automatically open Step 2 (Personal Information) after short delay
-        setTimeout(() => {
-          setStep(2);
-        }, 800);
-      }
-    } catch (error: any) {
-      console.error('[Auth Sign In ERROR]:', {
-        code: error?.code,
-        message: error?.message,
-        customData: error?.customData,
-        cause: error?.cause,
-        fullError: error
-      });
-      if (error.code === 'auth/popup-closed-by-user') {
-        setEmailError('Google sign-in popup was closed before completing authentication.');
-      } else if (error.code === 'auth/unauthorized-domain') {
-        const currentHost = window.location.hostname;
-        setUnauthorizedDomain(currentHost);
-        setShowDomainGuide(true);
-        setEmailError(`Domain "${currentHost}" needs to be added to Firebase Authorized Domains.`);
-      } else if (error.code === 'auth/operation-not-allowed') {
-        setShowProviderGuide(true);
-        setEmailError('Google Sign-In is disabled in Firebase. Please enable the Google Provider in Firebase Console.');
-      } else {
-        setEmailError(error.message || 'Failed to authenticate with Google. Please try again.');
-      }
-    } finally {
-      setIsGoogleSigningIn(false);
-    }
-  };
-
-  const handleCopyDomain = () => {
-    const domainToCopy = unauthorizedDomain || window.location.hostname;
-    navigator.clipboard.writeText(domainToCopy);
-    setCopiedDomain(true);
-    setTimeout(() => setCopiedDomain(false), 3000);
-  };
 
   const handleAddMember = () => {
     // Maximum 4 entries including Team Leader (1 leader + 3 members max)
@@ -543,7 +452,7 @@ export const RegistrationModal: React.FC<RegistrationModalProps> = ({
                     : 'text-slate-400'
                 }`}
               >
-                GOOGLE SIGN IN
+                EMAIL ENTRY
               </span>
             </div>
 
@@ -624,162 +533,51 @@ export const RegistrationModal: React.FC<RegistrationModalProps> = ({
           {/* Form Content */}
           <form onSubmit={handleSubmit}>
             
-            {/* STEP 1: GOOGLE AUTHENTICATION */}
+            {/* STEP 1: EMAIL ENTRY */}
             {step === 1 && (
               <div className="space-y-6 pt-2 animate-fadeIn">
                 
-                {/* Google Authentication Box */}
-                <div className="p-8 rounded-2xl bg-slate-900/90 border border-slate-800 text-center space-y-4 shadow-lg">
-                  <h3 className="text-base font-bold text-white tracking-wide">
-                    Google Sign-In Authentication
-                  </h3>
-                  <p className="text-xs text-slate-400 max-w-md mx-auto leading-relaxed">
-                    Sign in with your Google account to verify your email address and unlock Step 2 of registration.
-                  </p>
-
-                  <div className="pt-2">
-                    <button
-                      type="button"
-                      disabled={isGoogleSigningIn}
-                      onClick={handleGoogleSignIn}
-                      className="w-full sm:w-auto px-8 py-4 bg-white hover:bg-slate-100 disabled:bg-slate-300 text-slate-900 font-extrabold rounded-xl text-sm transition-all duration-200 cursor-pointer shadow-lg inline-flex items-center justify-center gap-3 border border-slate-200 hover:scale-[1.02]"
-                    >
-                      {isGoogleSigningIn ? (
-                        <>
-                          <Loader2 className="w-5 h-5 animate-spin text-blue-600" />
-                          <span>Signing in with Google...</span>
-                        </>
-                      ) : isGoogleVerified && email ? (
-                        <span className="flex items-center gap-2 text-emerald-700 font-extrabold">
-                          <CheckCircle2 className="w-5 h-5 text-emerald-600" />
-                          Signed In: {email}
-                        </span>
-                      ) : (
-                        <>
-                          <svg className="w-5 h-5 shrink-0" viewBox="0 0 24 24">
-                            <path
-                              fill="#4285F4"
-                              d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
-                            />
-                            <path
-                              fill="#34A853"
-                              d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
-                            />
-                            <path
-                              fill="#FBBC05"
-                              d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"
-                            />
-                            <path
-                              fill="#EA4335"
-                              d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"
-                            />
-                          </svg>
-                          <span>Sign in with Google</span>
-                        </>
-                      )}
-                    </button>
+                {/* Email Entry Box */}
+                <div className="p-8 rounded-2xl bg-slate-900/90 border border-slate-800 text-center space-y-6 shadow-lg max-w-lg mx-auto">
+                  <div className="space-y-2">
+                    <h3 className="text-xl font-black text-white tracking-wide">
+                      Enter Your Email
+                    </h3>
+                    <p className="text-xs text-slate-400 max-w-sm mx-auto leading-relaxed">
+                      Please provide a valid email address to proceed with your registration for Eureka! 2026.
+                    </p>
                   </div>
 
-                  {isGoogleVerified && email && (
-                    <div className="p-3 bg-emerald-950/80 border border-emerald-700/80 text-emerald-200 rounded-xl text-xs font-semibold flex items-center justify-center gap-2">
-                      <CheckCircle2 className="w-4 h-4 text-emerald-400" />
-                      <span>Verified Google Account: <strong>{email}</strong></span>
-                    </div>
-                  )}
+                  <div className="pt-2">
+                    <input
+                      type="email"
+                      required
+                      placeholder="e.g. innovator@example.com"
+                      className="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-4 text-white placeholder:text-slate-500 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 text-sm transition-all text-center"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                    />
+                  </div>
 
                   {emailError && (
                     <p className="text-red-400 text-xs mt-2 font-medium bg-red-950/60 p-3 rounded-lg border border-red-900/50">
                       {emailError}
                     </p>
                   )}
-
-                  {showDomainGuide && (
-                    <div className="mt-4 p-4 rounded-xl bg-amber-950/60 border border-amber-500/40 text-left space-y-3 animate-fadeIn">
-                      <div className="flex items-start gap-2.5">
-                        <ShieldAlert className="w-5 h-5 text-amber-400 shrink-0 mt-0.5" />
-                        <div>
-                          <h4 className="text-xs font-bold text-amber-200">
-                            Firebase Authorized Domain Setup Required
-                          </h4>
-                          <p className="text-[11px] text-amber-300/80 mt-0.5 leading-relaxed">
-                            Google popup auth requires adding this app's domain to your Firebase Console under <strong>Authentication &gt; Settings &gt; Authorized domains</strong>.
-                          </p>
-                        </div>
-                      </div>
-
-                      <div className="bg-slate-950/80 p-2.5 rounded-lg flex items-center justify-between border border-slate-800 gap-2">
-                        <code className="text-xs text-blue-300 font-mono select-all truncate">
-                          {unauthorizedDomain || window.location.hostname}
-                        </code>
-                        <button
-                          type="button"
-                          onClick={handleCopyDomain}
-                          className="px-3 py-1.5 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold rounded text-xs transition-colors shrink-0 flex items-center gap-1.5 cursor-pointer"
-                        >
-                          {copiedDomain ? (
-                            <>
-                              <Check className="w-3.5 h-3.5 text-slate-950" />
-                              <span>Copied!</span>
-                            </>
-                          ) : (
-                            <>
-                              <Copy className="w-3.5 h-3.5" />
-                              <span>Copy Domain</span>
-                            </>
-                          )}
-                        </button>
-                      </div>
-
-                      <div className="text-[11px] text-slate-300 space-y-1 pl-1">
-                        <p className="font-semibold text-amber-200">3 Quick Steps in Firebase Console:</p>
-                        <ol className="list-decimal list-inside space-y-0.5 text-slate-400">
-                          <li>Go to <a href="https://console.firebase.google.com" target="_blank" rel="noreferrer" className="text-blue-400 underline inline-flex items-center gap-0.5">Firebase Console <ExternalLink className="w-3 h-3" /></a></li>
-                          <li>Navigate to <strong>Authentication &gt; Settings &gt; Authorized domains</strong></li>
-                          <li>Click <strong>Add domain</strong> and paste the copied domain above.</li>
-                        </ol>
-                      </div>
-                    </div>
-                  )}
-
-                  {showProviderGuide && (
-                    <div className="mt-4 p-4 rounded-xl bg-red-950/60 border border-red-500/40 text-left space-y-3 animate-fadeIn">
-                      <div className="flex items-start gap-2.5">
-                        <ShieldAlert className="w-5 h-5 text-red-400 shrink-0 mt-0.5" />
-                        <div>
-                          <h4 className="text-xs font-bold text-red-200">
-                            Google Sign-In Provider Needs to be Enabled
-                          </h4>
-                          <p className="text-[11px] text-red-300/80 mt-0.5 leading-relaxed">
-                            Firebase returned <code className="text-amber-300 font-mono">auth/operation-not-allowed</code> because Google is not enabled as a Sign-in Provider in your project console.
-                          </p>
-                        </div>
-                      </div>
-
-                      <div className="text-[11px] text-slate-300 space-y-1 pl-1 bg-slate-950/80 p-3 rounded-lg border border-slate-800">
-                        <p className="font-semibold text-red-200">How to fix in 3 clicks (10 seconds):</p>
-                        <ol className="list-decimal list-inside space-y-1 text-slate-300">
-                          <li>Go to <a href="https://console.firebase.google.com" target="_blank" rel="noreferrer" className="text-blue-400 underline inline-flex items-center gap-0.5">Firebase Console <ExternalLink className="w-3 h-3" /></a></li>
-                          <li>Click <strong>Authentication</strong> ➔ <strong>Sign-in method</strong> tab.</li>
-                          <li>Click <strong>Google</strong> (under Additional providers or Sign-in providers).</li>
-                          <li>Toggle <strong>Enable</strong>, select your Support email, and click <strong>Save</strong>!</li>
-                        </ol>
-                      </div>
-                    </div>
-                  )}
                 </div>
 
-                <div className="pt-4 flex justify-end">
+                <div className="pt-4 flex justify-center sm:justify-end">
                   <button
                     type="button"
                     onClick={() => {
-                      if (!isGoogleVerified || !email) {
-                        setEmailError('Please click "Sign in with Google" to authenticate before proceeding to Step 2');
+                      if (!email.trim() || !/^\S+@\S+\.\S+$/.test(email)) {
+                        setEmailError('Please enter a valid email address to continue.');
                         return;
                       }
                       setEmailError('');
                       setStep(2);
                     }}
-                    className="bg-[#2563eb] hover:bg-blue-700 text-white font-bold px-8 py-3 rounded-lg text-sm transition-colors cursor-pointer shadow-lg shadow-blue-600/30 flex items-center gap-2"
+                    className="w-full sm:w-auto bg-[#2563eb] hover:bg-blue-700 text-white font-bold px-8 py-3 rounded-xl text-sm transition-colors cursor-pointer shadow-lg shadow-blue-600/30 flex items-center justify-center gap-2"
                   >
                     <span>Next Step →</span>
                   </button>
