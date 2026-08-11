@@ -4,7 +4,7 @@ import { TRACKS_DATA } from '../data/eurekaData';
 import confetti from 'canvas-confetti';
 import { X, CheckCircle2, Upload, Plus, Trash2, Loader2, AlertTriangle, Copy, Check, ExternalLink, ShieldAlert } from 'lucide-react';
 import { collection, addDoc } from 'firebase/firestore';
-import { GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
+import { GoogleAuthProvider, signInWithPopup, signInWithRedirect } from 'firebase/auth';
 import { db, auth } from '../lib/firebase';
 
 interface RegistrationModalProps {
@@ -125,6 +125,13 @@ export const RegistrationModal: React.FC<RegistrationModalProps> = ({
     try {
       const provider = new GoogleAuthProvider();
       provider.setCustomParameters({ prompt: 'select_account' });
+      
+      const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+      if (isMobile) {
+        await signInWithRedirect(auth, provider);
+        return;
+      }
+      
       const result = await signInWithPopup(auth, provider);
       const user = result.user;
       
@@ -150,7 +157,13 @@ export const RegistrationModal: React.FC<RegistrationModalProps> = ({
         }, 800);
       }
     } catch (error: any) {
-      console.error('Google Auth Error:', error);
+      console.error('[Auth Sign In ERROR]:', {
+        code: error?.code,
+        message: error?.message,
+        customData: error?.customData,
+        cause: error?.cause,
+        fullError: error
+      });
       if (error.code === 'auth/popup-closed-by-user') {
         setEmailError('Google sign-in popup was closed before completing authentication.');
       } else if (error.code === 'auth/unauthorized-domain') {

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Menu, X, User, Instagram, LogOut, LogIn } from 'lucide-react';
-import { User as FirebaseUser, GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
+import { User as FirebaseUser, GoogleAuthProvider, signInWithPopup, signInWithRedirect } from 'firebase/auth';
 import { auth } from '../lib/firebase';
 
 interface NavbarProps {
@@ -37,10 +37,22 @@ export const Navbar: React.FC<NavbarProps> = ({
     try {
       const provider = new GoogleAuthProvider();
       provider.setCustomParameters({ prompt: 'select_account' });
-      await signInWithPopup(auth, provider);
-      onOpenRegister();
-    } catch (err: any) {
-      console.error('Navbar Google Auth Error:', err);
+      
+      const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+      if (isMobile) {
+        await signInWithRedirect(auth, provider);
+      } else {
+        await signInWithPopup(auth, provider);
+        onOpenRegister();
+      }
+    } catch (error: any) {
+      console.error('[Auth Sign In ERROR]:', {
+        code: error?.code,
+        message: error?.message,
+        customData: error?.customData,
+        cause: error?.cause,
+        fullError: error
+      });
       onOpenRegister();
     } finally {
       setIsSigningIn(false);

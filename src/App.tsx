@@ -18,7 +18,7 @@ import { Footer } from './components/Footer';
 import { RegistrationModal } from './components/RegistrationModal';
 import { TeaserModal } from './components/TeaserModal';
 import { TrackId, PitchSubmission } from './types';
-import { onAuthStateChanged, User as FirebaseUser, signOut } from 'firebase/auth';
+import { onAuthStateChanged, User as FirebaseUser, signOut, getRedirectResult } from 'firebase/auth';
 import { auth } from './lib/firebase';
 
 export default function App() {
@@ -30,6 +30,24 @@ export default function App() {
 
   // Real-time Firebase Auth Listener
   useEffect(() => {
+    console.log('[App] Checking getRedirectResult...');
+    getRedirectResult(auth).then((result) => {
+      if (result) {
+        console.log('[Auth Redirect Result SUCCESS]:', result.user);
+      } else {
+        console.log('[Auth Redirect Result]: No redirect result found.');
+      }
+    }).catch((error) => {
+      console.error('[Auth Redirect Result ERROR]:', {
+        code: error?.code,
+        message: error?.message,
+        customData: error?.customData,
+        cause: error?.cause,
+        fullError: error
+      });
+      alert(`Firebase Redirect Error: ${error?.code} - ${error?.message}\nCheck console for the full object and network responses.`);
+    });
+
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       setAuthUser(user);
     });
