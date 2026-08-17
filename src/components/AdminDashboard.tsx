@@ -380,22 +380,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isOpen, onClose 
                   </p>
                 </div>
 
-                {/* Quick Demo Login Option */}
-                <button
-                  onClick={handleQuickDemoAdminLogin}
-                  disabled={authSubmitting}
-                  className="w-full py-3 px-4 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-extrabold text-xs uppercase tracking-wider rounded-xl transition-all shadow-lg shadow-blue-600/20 flex items-center justify-center gap-2 cursor-pointer"
-                >
-                  <Sparkles className="w-4 h-4 text-yellow-300 fill-yellow-300" />
-                  <span>Quick Demo Admin Access (Instant)</span>
-                </button>
 
-                <div className="relative flex items-center justify-center">
-                  <div className="border-t border-slate-800 w-full" />
-                  <span className="bg-slate-950 px-3 text-[11px] uppercase tracking-wider font-bold text-slate-500 absolute">
-                    Or use credentials
-                  </span>
-                </div>
 
                 <form onSubmit={handleAuthSubmit} className="space-y-4">
                   <div>
