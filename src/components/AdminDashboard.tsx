@@ -432,18 +432,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isOpen, onClose 
                   </button>
                 </form>
 
-                <div className="text-center">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setIsSignUp(!isSignUp);
-                      setAuthError('');
-                    }}
-                    className="text-xs text-blue-400 hover:underline font-semibold cursor-pointer"
-                  >
-                    {isSignUp ? 'Already have an admin account? Sign In' : 'Need to create an admin user? Sign Up'}
-                  </button>
-                </div>
+
 
               </div>
             </div>
