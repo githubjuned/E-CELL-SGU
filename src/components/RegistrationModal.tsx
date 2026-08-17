@@ -185,7 +185,10 @@ export const RegistrationModal: React.FC<RegistrationModalProps> = ({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setSubmitError('');
+    
+    // BLOCK NEW ENTRIES - Registrations are paused
+    setSubmitError('Registrations are currently paused. It will reopen again on 18th Aug morning 7 AM.');
+    return;
 
     if (!questionnaire.problemStatement.trim() || !questionnaire.solution.trim()) {
       setSubmitError('Please fill in both Problem Statement and Proposed Solution before submitting.');
@@ -537,50 +540,17 @@ export const RegistrationModal: React.FC<RegistrationModalProps> = ({
             {step === 1 && (
               <div className="space-y-6 pt-2 animate-fadeIn">
                 
-                {/* Email Entry Box */}
+                {/* Registration Paused Box */}
                 <div className="p-8 rounded-2xl bg-slate-900/90 border border-slate-800 text-center space-y-6 shadow-lg max-w-lg mx-auto">
-                  <div className="space-y-2">
-                    <h3 className="text-xl font-black text-white tracking-wide">
-                      Enter Your Email
+                  <div className="space-y-4 flex flex-col items-center">
+                    <AlertTriangle className="w-12 h-12 text-amber-500 mb-2" />
+                    <h3 className="text-xl font-black text-white tracking-wide uppercase">
+                      Registrations Paused
                     </h3>
-                    <p className="text-xs text-slate-400 max-w-sm mx-auto leading-relaxed">
-                      Please provide a valid email address to proceed with your registration for Eureka! 2026.
+                    <p className="text-sm text-slate-300 max-w-sm mx-auto leading-relaxed font-medium">
+                      Registrations are paused now. It will reopen again on 18th Aug morning 7 AM and the last time for registration is 10 AM on 18th August 2026.
                     </p>
                   </div>
-
-                  <div className="pt-2">
-                    <input
-                      type="email"
-                      required
-                      placeholder="e.g. innovator@example.com"
-                      className="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-4 text-white placeholder:text-slate-500 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 text-sm transition-all text-center"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                    />
-                  </div>
-
-                  {emailError && (
-                    <p className="text-red-400 text-xs mt-2 font-medium bg-red-950/60 p-3 rounded-lg border border-red-900/50">
-                      {emailError}
-                    </p>
-                  )}
-                </div>
-
-                <div className="pt-4 flex justify-center sm:justify-end">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      if (!email.trim() || !/^\S+@\S+\.\S+$/.test(email)) {
-                        setEmailError('Please enter a valid email address to continue.');
-                        return;
-                      }
-                      setEmailError('');
-                      setStep(2);
-                    }}
-                    className="w-full sm:w-auto bg-[#2563eb] hover:bg-blue-700 text-white font-bold px-8 py-3 rounded-xl text-sm transition-colors cursor-pointer shadow-lg shadow-blue-600/30 flex items-center justify-center gap-2"
-                  >
-                    <span>Next Step →</span>
-                  </button>
                 </div>
               </div>
             )}
