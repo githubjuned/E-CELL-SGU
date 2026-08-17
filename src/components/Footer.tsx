@@ -4,9 +4,10 @@ import { Rocket, ExternalLink, ArrowUp, Sparkles } from 'lucide-react';
 interface FooterProps {
   onNavigate: (sectionId: string) => void;
   onOpenRegister: () => void;
+  onOpenAdmin: () => void;
 }
 
-export const Footer: React.FC<FooterProps> = ({ onNavigate, onOpenRegister }) => {
+export const Footer: React.FC<FooterProps> = ({ onNavigate, onOpenRegister, onOpenAdmin }) => {
   const scrollToTop = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
@@ -77,6 +78,10 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate, onOpenRegister }) =>
                 <span>SINE IITB Incubator</span>
                 <ExternalLink className="w-3 h-3" />
               </a>
+              <button onClick={onOpenAdmin} className="flex items-center gap-1.5 hover:text-blue-400 text-left w-full mt-2 text-slate-500">
+                <span>Admin Portal</span>
+                <ExternalLink className="w-3 h-3" />
+              </button>
             </div>
 
             <div className="pt-3">

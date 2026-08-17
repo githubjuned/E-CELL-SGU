@@ -60,7 +60,7 @@ interface RegistrationDoc {
   teamSize?: number;
   teamMembers?: Array<{ name: string; email: string; role?: string; phone?: string }>;
   deckName?: string;
-  createdAt?: string;
+  createdAt?: any;
   submittedAtFormatted?: string;
   status?: string;
 }
@@ -69,6 +69,28 @@ interface AdminDashboardProps {
   isOpen: boolean;
   onClose: () => void;
 }
+
+export const formatRegisteredAtIST = (createdAt: any) => {
+  if (!createdAt) return { date: 'N/A', time: 'N/A', full: 'N/A' };
+  try {
+    const d = typeof createdAt?.toDate === 'function' ? createdAt.toDate() : new Date(createdAt);
+    if (isNaN(d.getTime())) return { date: 'N/A', time: 'N/A', full: 'N/A' };
+    
+    const optionsDate = { timeZone: 'Asia/Kolkata', day: '2-digit', month: 'short', year: 'numeric' } as const;
+    const optionsTime = { timeZone: 'Asia/Kolkata', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true } as const;
+    
+    const datePart = new Intl.DateTimeFormat('en-GB', optionsDate).format(d);
+    const timePart = new Intl.DateTimeFormat('en-US', optionsTime).format(d);
+    
+    return {
+      date: datePart,
+      time: timePart,
+      full: `${datePart}, ${timePart}`
+    };
+  } catch (e) {
+    return { date: 'N/A', time: 'N/A', full: 'N/A' };
+  }
+};
 
 export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isOpen, onClose }) => {
   const [adminUser, setAdminUser] = useState<User | null>(null);
@@ -143,6 +165,13 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isOpen, onClose 
     e.preventDefault();
     setAuthError('');
     setAuthSubmitting(true);
+
+    // Hardcoded custom credentials bypass
+    if (authEmail === 'Juned@9966' && authPassword === 'Juned@9966') {
+      setAdminUser({ email: 'Juned@9966', uid: 'master-juned' } as User);
+      setAuthSubmitting(false);
+      return;
+    }
 
     try {
       if (isSignUp) {
@@ -372,12 +401,12 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isOpen, onClose 
                   <div>
                     <label className="block text-xs font-semibold text-slate-300 mb-1.5 flex items-center gap-1.5">
                       <Mail className="w-3.5 h-3.5 text-blue-400" />
-                      <span>Admin Email</span>
+                      <span>Admin Email or Username</span>
                     </label>
                     <input
-                      type="email"
+                      type="text"
                       required
-                      placeholder="admin@eureka.ecell.in"
+                      placeholder="admin@eureka.ecell.in or Username"
                       value={authEmail}
                       onChange={(e) => setAuthEmail(e.target.value)}
                       className="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-3 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-blue-500"
@@ -560,7 +589,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isOpen, onClose 
                         <th className="p-3.5">Contact</th>
                         <th className="p-3.5">Track & Stage</th>
                         <th className="p-3.5">College</th>
-                        <th className="p-3.5">Date</th>
+                        <th className="p-3.5">Registered At</th>
                         <th className="p-3.5">Status</th>
                         <th className="p-3.5 text-right">Actions</th>
                       </tr>
@@ -591,7 +620,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isOpen, onClose 
                           </td>
                           <td className="p-3.5 text-slate-300">{reg.college || 'N/A'}</td>
                           <td className="p-3.5 text-slate-400 whitespace-nowrap">
-                            {reg.submittedAtFormatted || (reg.createdAt ? new Date(reg.createdAt).toLocaleDateString() : 'N/A')}
+                            {formatRegisteredAtIST(reg.createdAt).full}
                           </td>
                           <td className="p-3.5">
                             <select
@@ -672,6 +701,15 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isOpen, onClose 
                 <div>
                   <span className="text-slate-500 font-bold block uppercase">College / Organization</span>
                   <span className="text-white font-semibold">{selectedDoc.college}</span>
+                </div>
+                <div className="col-span-2 pt-2 border-t border-slate-800/50">
+                  <span className="text-slate-500 font-bold block uppercase">Registered At</span>
+                  <div className="text-white font-semibold">
+                    {formatRegisteredAtIST(selectedDoc.createdAt).full}
+                    <div className="text-[10px] text-slate-400 font-normal mt-0.5">
+                      Date: {formatRegisteredAtIST(selectedDoc.createdAt).date} | Time: {formatRegisteredAtIST(selectedDoc.createdAt).time}
+                    </div>
+                  </div>
                 </div>
               </div>
 

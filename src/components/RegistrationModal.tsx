@@ -3,7 +3,7 @@ import { TrackId, PitchSubmission, TeamMember } from '../types';
 import { TRACKS_DATA } from '../data/eurekaData';
 import confetti from 'canvas-confetti';
 import { X, CheckCircle2, Upload, Plus, Trash2, Loader2, AlertTriangle, Copy, Check, ExternalLink, ShieldAlert } from 'lucide-react';
-import { collection, addDoc } from 'firebase/firestore';
+import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 
 interface RegistrationModalProps {
@@ -214,7 +214,7 @@ export const RegistrationModal: React.FC<RegistrationModalProps> = ({
       teamSize: 1 + teamMembers.length,
       teamMembers: teamMembers,
       deckName: questionnaire.deckName || 'Eureka_PitchDeck_v1.pdf',
-      createdAt: new Date().toISOString(),
+      createdAt: serverTimestamp(),
       submittedAtFormatted: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
       status: 'Under Review',
     };

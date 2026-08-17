@@ -17,6 +17,7 @@ import { ContactSection } from './components/ContactSection';
 import { Footer } from './components/Footer';
 import { RegistrationModal } from './components/RegistrationModal';
 import { TeaserModal } from './components/TeaserModal';
+import { AdminDashboard } from './components/AdminDashboard';
 import { TrackId, PitchSubmission } from './types';
 import { auth } from './lib/firebase';
 
@@ -25,6 +26,7 @@ export default function App() {
   const [isRegisterOpen, setIsRegisterOpen] = useState<boolean>(false);
   const [selectedTrackId, setSelectedTrackId] = useState<TrackId>('business');
   const [isTeaserOpen, setIsTeaserOpen] = useState<boolean>(false);
+  const [isAdminOpen, setIsAdminOpen] = useState<boolean>(false);
 
   // Persistence for user registration submission
   const [mySubmission, setMySubmission] = useState<PitchSubmission | null>(() => {
@@ -123,6 +125,7 @@ export default function App() {
       <Footer
         onNavigate={handleNavigate}
         onOpenRegister={() => handleOpenRegister()}
+        onOpenAdmin={() => setIsAdminOpen(true)}
       />
 
       {/* Interactive Modals */}
@@ -137,6 +140,11 @@ export default function App() {
         isOpen={isTeaserOpen}
         onClose={() => setIsTeaserOpen(false)}
         onOpenRegister={() => handleOpenRegister()}
+      />
+
+      <AdminDashboard 
+        isOpen={isAdminOpen} 
+        onClose={() => setIsAdminOpen(false)} 
       />
 
     </div>
