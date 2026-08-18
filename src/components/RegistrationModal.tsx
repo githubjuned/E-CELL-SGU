@@ -228,9 +228,9 @@ export const RegistrationModal: React.FC<RegistrationModalProps> = ({
       docId = docRef.id;
     } catch (err: any) {
       console.error('Error saving to Firestore registrations collection:', err);
-      // Fallback allowed for graceful UX if offline
-    } finally {
+      setSubmitError('Failed to save registration: ' + err.message);
       setIsSubmitting(false);
+      return;
     }
 
     const submission: PitchSubmission = {
