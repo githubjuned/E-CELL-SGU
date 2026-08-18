@@ -186,9 +186,7 @@ export const RegistrationModal: React.FC<RegistrationModalProps> = ({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    // BLOCK NEW ENTRIES - Registrations are paused
-    setSubmitError('Registrations are currently paused. It will reopen again on 18th Aug morning 7 AM.');
-    return;
+
 
     if (!questionnaire.problemStatement.trim() || !questionnaire.solution.trim()) {
       setSubmitError('Please fill in both Problem Statement and Proposed Solution before submitting.');
@@ -539,18 +537,42 @@ export const RegistrationModal: React.FC<RegistrationModalProps> = ({
             {/* STEP 1: EMAIL ENTRY */}
             {step === 1 && (
               <div className="space-y-6 pt-2 animate-fadeIn">
-                
-                {/* Registration Paused Box */}
-                <div className="p-8 rounded-2xl bg-slate-900/90 border border-slate-800 text-center space-y-6 shadow-lg max-w-lg mx-auto">
-                  <div className="space-y-4 flex flex-col items-center">
-                    <AlertTriangle className="w-12 h-12 text-amber-500 mb-2" />
-                    <h3 className="text-xl font-black text-white tracking-wide uppercase">
-                      Registrations Paused
-                    </h3>
-                    <p className="text-sm text-slate-300 max-w-sm mx-auto leading-relaxed font-medium">
-                      Registrations are paused now. It will reopen again on 18th Aug morning 7 AM and the last time for registration is 10 AM on 18th August 2026.
+                <div>
+                  <label className="block text-xs font-semibold text-white mb-2">
+                    Primary Contact Email <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="email"
+                    required
+                    placeholder="name@example.com"
+                    value={email}
+                    onChange={(e) => {
+                      setEmail(e.target.value);
+                      setEmailError('');
+                    }}
+                    className="w-full bg-[#f8fafc] text-slate-900 rounded-xl px-4 py-3.5 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                  {emailError && (
+                    <p className="mt-2 text-red-400 text-xs font-semibold">
+                      {emailError}
                     </p>
-                  </div>
+                  )}
+                </div>
+
+                <div className="pt-6 flex items-center justify-end">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (!email.trim() || !/^\S+@\S+\.\S+$/.test(email)) {
+                        setEmailError('Please enter a valid email address.');
+                        return;
+                      }
+                      setStep(2);
+                    }}
+                    className="bg-[#2563eb] hover:bg-blue-700 text-white font-bold px-8 py-3 rounded-lg text-sm transition-colors cursor-pointer shadow-lg shadow-blue-600/30 flex items-center gap-2"
+                  >
+                    <span>Next Step →</span>
+                  </button>
                 </div>
               </div>
             )}
