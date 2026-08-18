@@ -535,42 +535,41 @@ export const RegistrationModal: React.FC<RegistrationModalProps> = ({
           {/* Form Content */}
           <form onSubmit={handleSubmit}>
             
-            {/* STEP 1: EMAIL ENTRY */}
+            {/* STEP 1: EMAIL ENTRY (CLOSED) */}
             {step === 1 && (
               <div className="space-y-6 pt-2 animate-fadeIn">
+                
+                {/* REGISTRATIONS CLOSED MESSAGE */}
+                <div className="bg-rose-950/40 border border-rose-900/50 p-6 rounded-xl flex flex-col items-center justify-center text-center space-y-3 shadow-lg mb-6">
+                  <ShieldAlert className="w-10 h-10 text-rose-500 mb-2" />
+                  <h3 className="text-xl font-bold text-white tracking-tight">Registrations are Closed</h3>
+                  <p className="text-sm text-slate-300 max-w-md">
+                    Thank you for your interest! We are no longer accepting new entries for this event. 
+                    If you have any queries or require assistance, please feel free to contact us at{' '}
+                    <a href="mailto:kj1201577@gmail.com" className="text-blue-400 hover:text-blue-300 font-semibold transition-colors">
+                      kj1201577@gmail.com
+                    </a>.
+                  </p>
+                </div>
+
                 <div>
-                  <label className="block text-xs font-semibold text-white mb-2">
-                    Primary Contact Email <span className="text-red-500">*</span>
+                  <label className="block text-xs font-semibold text-slate-500 mb-2">
+                    Primary Contact Email <span className="text-slate-600">*</span>
                   </label>
                   <input
                     type="email"
-                    required
-                    placeholder="name@example.com"
+                    disabled
+                    placeholder="Registrations closed"
                     value={email}
-                    onChange={(e) => {
-                      setEmail(e.target.value);
-                      setEmailError('');
-                    }}
-                    className="w-full bg-[#f8fafc] text-slate-900 rounded-xl px-4 py-3.5 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full bg-[#f8fafc]/10 text-slate-500 rounded-xl px-4 py-3.5 text-sm font-medium cursor-not-allowed opacity-60"
                   />
-                  {emailError && (
-                    <p className="mt-2 text-red-400 text-xs font-semibold">
-                      {emailError}
-                    </p>
-                  )}
                 </div>
 
                 <div className="pt-6 flex items-center justify-end">
                   <button
                     type="button"
-                    onClick={() => {
-                      if (!email.trim() || !/^\S+@\S+\.\S+$/.test(email)) {
-                        setEmailError('Please enter a valid email address.');
-                        return;
-                      }
-                      setStep(2);
-                    }}
-                    className="bg-[#2563eb] hover:bg-blue-700 text-white font-bold px-8 py-3 rounded-lg text-sm transition-colors cursor-pointer shadow-lg shadow-blue-600/30 flex items-center gap-2"
+                    disabled
+                    className="bg-slate-800 text-slate-400 font-bold px-8 py-3 rounded-lg text-sm cursor-not-allowed flex items-center gap-2 opacity-70"
                   >
                     <span>Next Step →</span>
                   </button>
