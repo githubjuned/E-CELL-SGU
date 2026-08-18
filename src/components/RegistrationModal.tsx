@@ -232,6 +232,7 @@ export const RegistrationModal: React.FC<RegistrationModalProps> = ({
       setIsSubmitting(false);
       return;
     }
+    setIsSubmitting(false);
 
     const submission: PitchSubmission = {
       id: docId,
