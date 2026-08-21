@@ -235,7 +235,7 @@ export const EventUpdatesModal: React.FC<EventUpdatesModalProps> = ({ isOpen, on
                 <div className="space-y-2 text-sm font-medium text-slate-700">
                   <div className="flex justify-between items-center bg-slate-50 p-2 rounded-lg">
                     <span>JUNED</span>
-                    <a href="tel:9642912613" className="text-blue-600 hover:underline">9642912613</a>
+                    <a href="tel:+919642912613" className="text-blue-600 hover:underline">+91 96429 12613</a>
                   </div>
                   <div className="flex justify-between items-center bg-slate-50 p-2 rounded-lg">
                     <span>KRISHNA</span>
