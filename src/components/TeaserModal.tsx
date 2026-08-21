@@ -4,13 +4,13 @@ import { X, Play, Download, Sparkles, Trophy, Video } from 'lucide-react';
 interface TeaserModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onOpenRegister: () => void;
+  onOpenEventUpdates: () => void;
 }
 
 export const TeaserModal: React.FC<TeaserModalProps> = ({
   isOpen,
   onClose,
-  onOpenRegister,
+  onOpenEventUpdates,
 }) => {
   if (!isOpen) return null;
 
@@ -94,11 +94,11 @@ export const TeaserModal: React.FC<TeaserModalProps> = ({
           <button
             onClick={() => {
               onClose();
-              onOpenRegister();
+              onOpenEventUpdates();
             }}
             className="px-6 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-extrabold text-xs uppercase tracking-wider shadow-lg shadow-amber-500/20"
           >
-            Register Startup Now
+            EVENT UPDATES 🚀
           </button>
         </div>
 

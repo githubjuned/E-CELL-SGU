@@ -3,11 +3,11 @@ import { Rocket, ExternalLink, ArrowUp, Sparkles } from 'lucide-react';
 
 interface FooterProps {
   onNavigate: (sectionId: string) => void;
-  onOpenRegister: () => void;
+  onOpenEventUpdates: () => void;
   onOpenAdmin: () => void;
 }
 
-export const Footer: React.FC<FooterProps> = ({ onNavigate, onOpenRegister, onOpenAdmin }) => {
+export const Footer: React.FC<FooterProps> = ({ onNavigate, onOpenEventUpdates, onOpenAdmin }) => {
   const scrollToTop = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
@@ -86,10 +86,10 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate, onOpenRegister, onOp
 
             <div className="pt-3">
               <button
-                onClick={onOpenRegister}
+                onClick={onOpenEventUpdates}
                 className="w-full py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-extrabold text-xs uppercase tracking-wider shadow-md"
               >
-                Register Startup
+                EVENT UPDATES 🚀
               </button>
             </div>
           </div>

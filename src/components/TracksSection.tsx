@@ -19,10 +19,10 @@ import {
 } from 'lucide-react';
 
 interface TracksSectionProps {
-  onSelectTrackToRegister: (trackId: TrackId) => void;
+  onOpenEventUpdates: () => void;
 }
 
-export const TracksSection: React.FC<TracksSectionProps> = ({ onSelectTrackToRegister }) => {
+export const TracksSection: React.FC<TracksSectionProps> = ({ onOpenEventUpdates }) => {
   const [selectedCategory, setSelectedCategory] = useState<string>('All');
   const [activeModalTrack, setActiveModalTrack] = useState<Track | null>(null);
 
@@ -142,12 +142,11 @@ export const TracksSection: React.FC<TracksSectionProps> = ({ onSelectTrackToReg
                 {/* Card Bottom CTA Actions */}
                 <div className="space-y-2 pt-4 border-t border-slate-100">
                   <button
-                    onClick={() => onSelectTrackToRegister(track.id)}
+                    onClick={() => onOpenEventUpdates()}
                     id={`apply-track-${track.id}`}
                     className="w-full py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs uppercase tracking-wider shadow-sm transition-all flex items-center justify-center gap-2 cursor-pointer"
                   >
-                    <span>Apply to {track.name.split(' ')[0]} Track</span>
-                    <ArrowRight className="w-4 h-4" />
+                    <span>GET EVENT UPDATES 🚀</span>
                   </button>
 
                   <button
@@ -246,13 +245,12 @@ export const TracksSection: React.FC<TracksSectionProps> = ({ onSelectTrackToReg
               </button>
               <button
                 onClick={() => {
-                  const trackId = activeModalTrack.id;
                   setActiveModalTrack(null);
-                  onSelectTrackToRegister(trackId);
+                  onOpenEventUpdates();
                 }}
                 className="px-6 py-2.5 rounded-xl bg-blue-600 text-white text-xs font-extrabold uppercase tracking-wider hover:bg-blue-700 shadow-md"
               >
-                Register For This Track
+                GET EVENT UPDATES 🚀
               </button>
             </div>
 

@@ -4,13 +4,13 @@ import { Menu, X, Instagram } from 'lucide-react';
 interface NavbarProps {
   activeSection: string;
   onNavigate: (sectionId: string) => void;
-  onOpenRegister: () => void;
+  onOpenEventUpdates: () => void;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
   activeSection,
   onNavigate,
-  onOpenRegister,
+  onOpenEventUpdates,
 }) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
@@ -77,10 +77,10 @@ export const Navbar: React.FC<NavbarProps> = ({
           </a>
 
           <button
-            onClick={onOpenRegister}
+            onClick={onOpenEventUpdates}
             className="hidden sm:flex items-center gap-1 px-4 py-1.5 rounded-full bg-blue-600 hover:bg-blue-700 text-white font-extrabold text-xs shadow-md transition-all cursor-pointer hover:scale-[1.02]"
           >
-            <span>Register Now</span>
+            <span>EVENT UPDATES 🚀</span>
           </button>
         </div>
 
@@ -115,12 +115,12 @@ export const Navbar: React.FC<NavbarProps> = ({
           <div className="pt-2 border-t border-gray-100 flex flex-col gap-2">
             <button
               onClick={() => {
-                onOpenRegister();
+                onOpenEventUpdates();
                 setMobileMenuOpen(false);
               }}
               className="w-full text-xs font-bold text-white text-center py-2 bg-blue-600 rounded-md"
             >
-              Register Now
+              EVENT UPDATES 🚀
             </button>
           </div>
         </div>

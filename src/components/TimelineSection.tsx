@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Calendar, ArrowRight, Sparkles } from 'lucide-react';
 
 interface TimelineSectionProps {
-  onOpenRegister: () => void;
+  onOpenEventUpdates: () => void;
 }
 
 interface PhaseData {
@@ -26,7 +26,7 @@ const ROADMAP_PHASES: PhaseData[] = [
         title: 'REGISTRATION PERIOD',
         description:
           'Eureka! opens its applications for all entrepreneurs on 10th July. Register by filling your details and logging in to the Eureka! dashboard. Add your co-founders and fill your startup idea details.',
-        actionLabel: 'Register Your Startup',
+        actionLabel: 'VIEW EVENT UPDATES 🚀',
       },
       {
         date: '18th August',
@@ -116,7 +116,7 @@ const ROADMAP_PHASES: PhaseData[] = [
   },
 ];
 
-export const TimelineSection: React.FC<TimelineSectionProps> = ({ onOpenRegister }) => {
+export const TimelineSection: React.FC<TimelineSectionProps> = ({ onOpenEventUpdates }) => {
   const [activePhaseId, setActivePhaseId] = useState<string>('registration');
 
   const currentPhase = ROADMAP_PHASES.find((p) => p.id === activePhaseId) || ROADMAP_PHASES[0];
@@ -197,7 +197,7 @@ export const TimelineSection: React.FC<TimelineSectionProps> = ({ onOpenRegister
                 {card.actionLabel && (
                   <div className="mt-6 pt-4 border-t border-slate-200/80">
                     <button
-                      onClick={onOpenRegister}
+                      onClick={onOpenEventUpdates}
                       className="w-full py-2.5 px-4 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-2 cursor-pointer shadow-xs"
                     >
                       <Sparkles className="w-4 h-4" />

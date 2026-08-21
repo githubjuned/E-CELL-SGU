@@ -1,10 +1,10 @@
 import React from 'react';
 
 interface ReadyToLaunchSectionProps {
-  onOpenRegister: () => void;
+  onOpenEventUpdates: () => void;
 }
 
-export const ReadyToLaunchSection: React.FC<ReadyToLaunchSectionProps> = ({ onOpenRegister }) => {
+export const ReadyToLaunchSection: React.FC<ReadyToLaunchSectionProps> = ({ onOpenEventUpdates }) => {
   return (
     <section className="py-20 sm:py-28 bg-white text-center relative overflow-hidden border-t border-slate-100">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
@@ -22,10 +22,10 @@ export const ReadyToLaunchSection: React.FC<ReadyToLaunchSectionProps> = ({ onOp
         {/* Apply Now Button */}
         <div className="mt-10 flex justify-center">
           <button
-            onClick={onOpenRegister}
+            onClick={onOpenEventUpdates}
             className="px-10 py-4 rounded-xl bg-[#030720] hover:bg-slate-900 text-white font-extrabold text-base tracking-widest uppercase transition-all shadow-xl hover:shadow-2xl hover:scale-[1.02] cursor-pointer"
           >
-            APPLY NOW
+            EVENT UPDATES 🚀
           </button>
         </div>
 

@@ -15,7 +15,7 @@ import { MediaPresenceSection } from './components/MediaPresenceSection';
 import { FAQSection } from './components/FAQSection';
 import { ContactSection } from './components/ContactSection';
 import { Footer } from './components/Footer';
-import { RegistrationModal } from './components/RegistrationModal';
+import { EventUpdatesModal } from './components/EventUpdatesModal';
 import { TeaserModal } from './components/TeaserModal';
 import { AdminDashboard } from './components/AdminDashboard';
 import { TrackId, PitchSubmission } from './types';
@@ -23,40 +23,17 @@ import { auth } from './lib/firebase';
 
 export default function App() {
   const [activeSection, setActiveSection] = useState<string>('home');
-  const [isRegisterOpen, setIsRegisterOpen] = useState<boolean>(false);
-  const [selectedTrackId, setSelectedTrackId] = useState<TrackId>('business');
+  const [isEventUpdatesOpen, setIsEventUpdatesOpen] = useState<boolean>(false);
   const [isTeaserOpen, setIsTeaserOpen] = useState<boolean>(false);
   const [isAdminOpen, setIsAdminOpen] = useState<boolean>(false);
-
-  // Persistence for user registration submission
-  const [mySubmission, setMySubmission] = useState<PitchSubmission | null>(() => {
-    try {
-      const saved = localStorage.getItem('eureka_pitch_submission');
-      return saved ? JSON.parse(saved) : null;
-    } catch (e) {
-      return null;
-    }
-  });
 
   const handleNavigate = (sectionId: string) => {
     setActiveSection(sectionId);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  const handleOpenRegister = (trackId?: TrackId) => {
-    if (trackId) {
-      setSelectedTrackId(trackId);
-    }
-    setIsRegisterOpen(true);
-  };
-
-  const handleSubmissionSuccess = (submission: PitchSubmission) => {
-    setMySubmission(submission);
-    try {
-      localStorage.setItem('eureka_pitch_submission', JSON.stringify(submission));
-    } catch (e) {
-      // ignore
-    }
+  const handleOpenEventUpdates = () => {
+    setIsEventUpdatesOpen(true);
   };
 
   const renderActiveSection = () => {
@@ -65,21 +42,21 @@ export default function App() {
         return (
           <>
             <Hero
-              onOpenRegister={() => handleOpenRegister()}
-              onExploreTracks={() => handleOpenRegister()}
+              onOpenEventUpdates={() => handleOpenEventUpdates()}
+              onExploreTracks={() => handleOpenEventUpdates()}
               onOpenTeaserModal={() => setIsTeaserOpen(true)}
             />
             <WhyEurekaSection />
             <EurekaJourneySection />
             <CommunityPhotoSection />
-            <ReadyToLaunchSection onOpenRegister={() => handleOpenRegister()} />
+            <ReadyToLaunchSection onOpenEventUpdates={() => handleOpenEventUpdates()} />
           </>
         );
       case 'structure':
         return (
           <div className="pt-16">
             <AboutSection />
-            <TimelineSection onOpenRegister={() => handleOpenRegister()} />
+            <TimelineSection onOpenEventUpdates={() => handleOpenEventUpdates()} />
             <FAQSection />
           </div>
         );
@@ -93,14 +70,14 @@ export default function App() {
         return (
           <>
             <Hero
-              onOpenRegister={() => handleOpenRegister()}
-              onExploreTracks={() => handleOpenRegister()}
+              onOpenEventUpdates={() => handleOpenEventUpdates()}
+              onExploreTracks={() => handleOpenEventUpdates()}
               onOpenTeaserModal={() => setIsTeaserOpen(true)}
             />
             <WhyEurekaSection />
             <EurekaJourneySection />
             <CommunityPhotoSection />
-            <ReadyToLaunchSection onOpenRegister={() => handleOpenRegister()} />
+            <ReadyToLaunchSection onOpenEventUpdates={() => handleOpenEventUpdates()} />
           </>
         );
     }
@@ -113,7 +90,7 @@ export default function App() {
       <Navbar
         activeSection={activeSection}
         onNavigate={handleNavigate}
-        onOpenRegister={handleOpenRegister}
+        onOpenEventUpdates={handleOpenEventUpdates}
       />
 
       {/* Main Content Area based on active navigation tab */}
@@ -124,22 +101,20 @@ export default function App() {
       {/* Footer */}
       <Footer
         onNavigate={handleNavigate}
-        onOpenRegister={() => handleOpenRegister()}
+        onOpenEventUpdates={() => handleOpenEventUpdates()}
         onOpenAdmin={() => setIsAdminOpen(true)}
       />
 
       {/* Interactive Modals */}
-      <RegistrationModal
-        isOpen={isRegisterOpen}
-        onClose={() => setIsRegisterOpen(false)}
-        initialTrackId={selectedTrackId}
-        onSubmitSuccess={handleSubmissionSuccess}
+      <EventUpdatesModal
+        isOpen={isEventUpdatesOpen}
+        onClose={() => setIsEventUpdatesOpen(false)}
       />
 
       <TeaserModal
         isOpen={isTeaserOpen}
         onClose={() => setIsTeaserOpen(false)}
-        onOpenRegister={() => handleOpenRegister()}
+        onOpenEventUpdates={() => handleOpenEventUpdates()}
       />
 
       <AdminDashboard 

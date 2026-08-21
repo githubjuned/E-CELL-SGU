@@ -2,13 +2,13 @@ import React from 'react';
 import { Play, Sparkles, ArrowRight } from 'lucide-react';
 
 interface HeroProps {
-  onOpenRegister: () => void;
+  onOpenEventUpdates: () => void;
   onExploreTracks: () => void;
   onOpenTeaserModal: () => void;
 }
 
 export const Hero: React.FC<HeroProps> = ({
-  onOpenRegister,
+  onOpenEventUpdates,
   onExploreTracks,
   onOpenTeaserModal,
 }) => {
@@ -42,10 +42,10 @@ export const Hero: React.FC<HeroProps> = ({
 
             <div className="pt-2 flex flex-wrap items-center gap-4">
               <button
-                onClick={onOpenRegister}
+                onClick={onOpenEventUpdates}
                 className="px-8 py-3.5 rounded-xl border-2 border-slate-950 bg-white text-slate-950 font-extrabold text-sm tracking-wider uppercase hover:bg-slate-950 hover:text-white transition-all shadow-md cursor-pointer"
               >
-                REGISTER
+                EVENT UPDATES 🚀
               </button>
             </div>
 
