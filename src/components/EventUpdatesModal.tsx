@@ -23,17 +23,17 @@ export const EventUpdatesModal: React.FC<EventUpdatesModalProps> = ({ isOpen, on
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 bg-black/60 backdrop-blur-md transition-all duration-300">
       <div 
-        className="bg-white w-full max-w-4xl max-h-[90vh] overflow-y-auto rounded-3xl shadow-2xl relative animate-in fade-in zoom-in-95 duration-300 flex flex-col"
+        className="bg-white w-full max-w-4xl max-h-[90vh] rounded-3xl shadow-2xl relative animate-in fade-in zoom-in-95 duration-300 overflow-hidden flex flex-col"
       >
         {/* Close Button */}
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 sm:top-6 sm:right-6 p-2 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-600 transition-colors z-10"
+          className="absolute top-4 right-4 sm:top-6 sm:right-6 p-2 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-600 transition-colors z-50"
         >
           <X className="w-6 h-6" />
         </button>
 
-        <div className="p-6 sm:p-10 space-y-10 relative overflow-hidden">
+        <div className="p-6 sm:p-10 space-y-10 relative overflow-y-auto flex-1">
           
           {/* Subtle Background Elements */}
           <div className="absolute top-0 right-0 w-64 h-64 bg-blue-100/50 rounded-full blur-3xl -z-10 pointer-events-none" />
