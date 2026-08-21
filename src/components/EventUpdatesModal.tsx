@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { X, ExternalLink, Calendar, MapPin, Clock, AlertTriangle, MessageCircle, Globe } from 'lucide-react';
 
 interface EventUpdatesModalProps {
@@ -7,6 +7,17 @@ interface EventUpdatesModalProps {
 }
 
 export const EventUpdatesModal: React.FC<EventUpdatesModalProps> = ({ isOpen, onClose }) => {
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, [isOpen]);
+
   if (!isOpen) return null;
 
   return (
