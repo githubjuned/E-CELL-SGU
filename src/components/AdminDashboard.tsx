@@ -262,6 +262,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isOpen, onClose 
       'Track': r.track || 'N/A',
       'Stage': r.stage || 'N/A',
       'Team Size': r.teamSize || 1,
+      'Team Members': r.teamMembers && r.teamMembers.length > 0 ? r.teamMembers.map(m => `${m.name || 'Member'} (${m.email || 'N/A'})`).join(', ') : 'N/A',
       'Elevator Pitch': r.oneLiner || 'N/A',
       'Problem Statement': r.problemStatement || 'N/A',
       'Solution': r.solution || 'N/A',
@@ -561,7 +562,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isOpen, onClose 
                         <th className="p-3.5">Startup / Team</th>
                         <th className="p-3.5">Team Leader</th>
                         <th className="p-3.5">Contact</th>
-                        <th className="p-3.5">Track & Stage</th>
+                        <th className="p-3.5">Team Members</th>
                         <th className="p-3.5">College</th>
                         <th className="p-3.5">Registered At</th>
                         <th className="p-3.5">Status</th>
@@ -587,10 +588,21 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isOpen, onClose 
                             <div className="text-slate-500 text-[10px]">{reg.phone || 'N/A'}</div>
                           </td>
                           <td className="p-3.5">
-                            <span className="px-2 py-0.5 rounded bg-blue-900/40 text-blue-300 border border-blue-700/50 text-[10px] font-bold uppercase block w-max">
-                              {reg.track || 'General'}
-                            </span>
-                            <span className="text-[10px] text-slate-400 mt-0.5 block">{reg.stage || 'Idea'}</span>
+                            {reg.teamMembers && reg.teamMembers.length > 0 ? (
+                              <div className="space-y-1">
+                                {reg.teamMembers.slice(0, 2).map((m, i) => (
+                                  <div key={i} className="text-[10px] leading-tight">
+                                    <span className="text-slate-300 font-semibold">{m.name || 'Member'}</span>
+                                    {m.email && <span className="text-slate-500 block truncate max-w-[140px]" title={m.email}>{m.email}</span>}
+                                  </div>
+                                ))}
+                                {reg.teamMembers.length > 2 && (
+                                  <span className="text-[10px] text-blue-400 font-semibold">+{reg.teamMembers.length - 2} more</span>
+                                )}
+                              </div>
+                            ) : (
+                              <span className="text-[10px] text-slate-500">No team members</span>
+                            )}
                           </td>
                           <td className="p-3.5 text-slate-300">{reg.college || 'N/A'}</td>
                           <td className="p-3.5 text-slate-400 whitespace-nowrap">
